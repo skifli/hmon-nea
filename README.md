@@ -2,7 +2,7 @@
 
 This is the repository for the LaTeX write-up for my OCR A-Level Computer Science (H446) NEA. The repository for the code can be found here: https://github.com/exeme-project/hmon.
 
-> [!INFORMATION]
+> [!NOTE]
 > The code repository is under [exeme-project](https://github.com/exeme-project) as that's the organisation I tend to use for some of my more ambitiuous programs, like my [own programming language's compiler](https://github.com/exeme-project/exeme-lang) (also written in C)!
 
 I use [nixOS](https://github.com/skifli/nixos) on my desktop, which allows me to define my environment in the [flake.nix](flake.nix) file. I also have settings and other useful doohickeys already setup in the [.zed](.zed/) directory, as I use the [Zed](https://zed.dev) editor (although I do also love [helix](https://helix-editor.com/) for when I'm doing terminal work).
@@ -19,7 +19,7 @@ Informal notes: [src/class-notes.md](src/class-notes.md).
 
 ## Zed setup
 
-> [!NOTE]
+> [!IMPORTANT]
 > As of writing this Zed doesn't have support for a project-specific `keybinds.json` file, so you have to manually copy to your user keybinds file :p.
 
 - Ctrl+Alt+W - Should automatically watch for changes to the NEA and re-build the PDF when it detects them.
