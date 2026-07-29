@@ -1,0 +1,23 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-alt-w": [
+        "task::Spawn",
+        { "task_name": "LaTeX: Watch and Build Project" },
+      ],
+      "ctrl-alt-p": ["task::Spawn", { "task_name": "LaTeX: Build NEA PDF" }],
+      "ctrl-shift-p": [
+        "task::Spawn",
+        { "task_name": "LaTeX: Clean Build Files" },
+      ],
+    },
+  },
+]

@@ -1,0 +1,100 @@
+\documentclass[12pt, a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{tocloft}
+
+% Styling Links
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=black,
+    pdftitle={hmon NEA Writeup},
+    pdfauthor={Aneeq Weerasinghe}
+}
+
+% Heads + Footers Configuration
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small \ttfamily hmon NEA Writeup}
+\rhead{\small \ttfamily OCR A Level Computer Science (H446)}
+\lfoot{\small \ttfamily Candidate No.: 0124 | Centre No.: 14285}
+\rfoot{\small \ttfamily Page \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% TOC Styling
+\renewcommand{\cfttoctitlefont}{\Huge\ttfamily\bfseries}
+\renewcommand{\cftsecfont}{\ttfamily\bfseries}
+\renewcommand{\cftsubsecfont}{\ttfamily}
+\renewcommand{\cftsecpagefont}{\ttfamily\bfseries}
+\renewcommand{\cftsubsecpagefont}{\ttfamily}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\begin{document}
+
+% Disable header on the first page
+\thispagestyle{empty}
+
+% First page - title & sub-title
+\normalfont
+{\Huge \ttfamily \textbf{hmon}} \\[0.2cm]
+{\large \slshape HID monitor - Tackling BadUSB attacks}
+
+\vspace{1cm}
+
+% First page - abstract
+\centerline{\small \ttfamily [ ABSTRACT ]}
+\vspace{0.1cm}
+
+\begin{quotation}
+	\noindent
+	\textbf{hmon} is a FOSS application designed to protect devices from BadUSB attacks. It continually monitors all connected HID devices for malicious inputs, and provides a user-friendly GUI for managing connected input devices.
+\end{quotation}
+
+\vspace{0.1cm}
+\rule{\textwidth}{0.25pt}
+
+% First page - metadata block
+\vspace{0.1cm}
+\noindent
+\begin{tabular}{@{} l p{4cm} l l @{}}
+	\textbf{Author:}      & Aneeq Weerasinghe & \textbf{Candidate No.:} & 0124  \\
+	\textbf{Class:}       & 13 ACP            & \textbf{Centre No.:}    & 14285 \\
+	\textbf{Supervisors:} & RZ, SMK           & \textbf{Course Code:}   & H446  \\
+	\textbf{Year:}        & 2026--2027        & \textbf{Code License:}  & MIT   \\
+\end{tabular}
+
+\vspace{0.1cm}
+\rule{\textwidth}{0.25pt}
+
+% First page - repositories
+\vspace{0.1cm}
+{\ttfamily \textbf{REPOSITORIES}}
+
+\vspace{0.1cm}
+
+\begin{description}
+	\item[\texttt{[src/code]}] \url{https://github.com/exeme-project/hmon}
+	\item[\texttt{[src/docs]}] \url{https://github.com/skifli/hmon-nea}
+\end{description}
+
+% Second page - TOC
+\newpage
+\vspace*{0.2cm}
+\tableofcontents
+
+\newpage
+
+% Sections of NEA
+
+\input{src/chapters/1_analysis.tex}
+
+\end{document}
