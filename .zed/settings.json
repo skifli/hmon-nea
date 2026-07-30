@@ -1,0 +1,23 @@
+{
+  "lsp": {
+    "texlab": {
+      "settings": {
+        "texlab": {
+          "build": { "onSave": true, "forwardSearchAfter": true },
+          "forwardSearch": {
+            "executable": "direnv",
+            "args": [
+              "exec",
+              ".",
+              "evince-synctex",
+              "-f",
+              "%l",
+              "%p",
+              "zed %f:%l",
+            ],
+          },
+        },
+      },
+    },
+  },
+}
