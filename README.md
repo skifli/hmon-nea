@@ -4,7 +4,8 @@ This is the repository for the LaTeX write-up for my OCR A-Level Computer (H446)
 NEA. The code repository can be found
 [@exeme-project/hmon](https://github.com/exeme-project/hmon).
 
-> [!NOTE] The code repository is under
+> [!NOTE]
+> The code repository is under
 > [exeme-project](https://github.com/exeme-project) as that is the organisation
 > I tend to use for some of my more ambitiuous programs, like my
 > [own programming language's compiler](https://github.com/exeme-project/exeme-lang)
