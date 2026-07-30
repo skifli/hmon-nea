@@ -20,4 +20,23 @@
       },
     },
   },
+  "languages": {
+    "Markdown": {
+      "format_on_save": "on",
+      "preferred_line_length": 80,
+      "formatter": {
+        "external": {
+          "command": "prettier",
+          "arguments": [
+            "--parser",
+            "markdown",
+            "--prose-wrap",
+            "always",
+            "--print-width",
+            "80",
+          ],
+        },
+      },
+    },
+  },
 }
