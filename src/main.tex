@@ -6,10 +6,10 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{microtype}
 \usepackage{inconsolata}
-\usepackage{parskip}
 \usepackage{hyperref}
 \usepackage{fancyhdr}
 \usepackage{tocloft}
+\usepackage{parskip} % Must do after tocloft
 
 % Styling Links
 \hypersetup{
@@ -37,6 +37,9 @@
 \renewcommand{\cftsecpagefont}{\ttfamily\bfseries}
 \renewcommand{\cftsubsecpagefont}{\ttfamily}
 \renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+% Misc
+\setlength{\headheight}{13.6pt}
 
 \begin{document}
 
