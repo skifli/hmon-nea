@@ -101,10 +101,13 @@ they are different for you:
 - I use the [Zed](https://zed.dev) editor. The `latex` extension automatically
   builds the output PDF on any change, so if your editor doesn't do that you
   should work out how to do so. As I also use Evince as aforementioned, it
-  automatically reloads the PDF on change (and remembers state). Lastly, I have
-  Zed configured to automatically perform forward searches for Evince in
-  [.zed/settings.json](.zed/settings.json) - again this should be setup in your
-  editor of choice.
+  automatically reloads the PDF on change (and remembers state). As well as
+  this, I have Zed configured to automatically perform forward searches for
+  Evince in [.zed/settings.json](.zed/settings.json) - again this should be
+  setup in your editor of choice. And lastly, the zeditor command in
+  [src/zeditor-synctex.sh](src/zeditor-synctex.sh) should be updated for the
+  name of the binary of your new editor - and if it uses a different syntax that
+  should be updated as well.
 - Whenever I start working on my NEA my computer automatically runs the
   [src/zeditor-synctex.sh](src/zeditor-synctex.sh) script - as aforementioned
   this is baked into my hotkey setup, but you should also look into starting
