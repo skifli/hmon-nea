@@ -4,6 +4,7 @@ This is the repository for the LaTeX write-up for my OCR A-Level Computer (H446)
 NEA. The code repository can be found
 [@exeme-project/hmon](https://github.com/exeme-project/hmon).
 
+<!-- prettier-ignore -->
 > [!NOTE]
 > The code repository is under
 > [exeme-project](https://github.com/exeme-project) as that is the organisation
@@ -46,7 +47,9 @@ following:
   probably work out some other way of starting that script whenever you open
   this directory.
 
-> [!NOTE] These scripts also require
+<!-- prettier-ignore -->
+> [!NOTE]
+> These scripts also require
 > [jq](https://github.com/skifli/nixos/commit/f4797f8ef6f3d425bd14e8d208f4454ae9efadaf#diff-7ca3f7dce1c0f19e09b9826d401954d02f09deee1125502809b89dfbded43149R190)
 > to be installed on your system if it's not already.
 
