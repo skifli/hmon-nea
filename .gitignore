@@ -1,2 +1,5 @@
 .direnv/*
 src/out/*
+
+src/*.pdf
+src/*.synctex.gz

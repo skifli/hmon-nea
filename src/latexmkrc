@@ -1,1 +1,2 @@
 $out_dir = 'out';
+$success_cmd = 'ln -sf out/%A.pdf %A.pdf && ln -sf out/%A.synctex.gz %A.synctex.gz';
