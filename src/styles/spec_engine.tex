@@ -1,0 +1,60 @@
+\newif\ifredactpii
+\redactpiifalse % Set to \redactpiitrue to export an anonymised PDF
+
+\usepackage{xcolor}
+
+\newlength{\piiwidth}
+
+% Ze commands
+\newcommand{\pii}[2][REDACTED]{%
+	\ifredactpii%
+		\settowidth{\piiwidth}{\footnotesize\ttfamily #1}%
+		\raisebox{0.15ex}{\color{black}\rule{\piiwidth}{1.1ex}}%
+	\else%
+		#2%
+	\fi%
+}
+\newcommand{\piiurl}[2][CODE REPOSITORY]{%
+	\ifredactpii%
+		\settowidth{\piiwidth}{\footnotesize\ttfamily #1}%
+		\raisebox{0.15ex}{\color{black}\rule{\piiwidth}{1.1ex}}%
+	\else%
+		\href{#2}{\texttt{#2}}%
+	\fi%
+}
+
+
+% Global stuff
+\newcommand{\candidateName}{\pii[CANDIDATE NAME]{Aneeq Weerasinghe}}
+\newcommand{\candidateNum}{\pii[0124]{0124}}
+\newcommand{\candidateClass}{\pii[13-BCP]{13-BCP}}
+\newcommand{\centreName}{\pii[CENTRE NAME]{St Olave's Grammar School}}
+\newcommand{\centreNum}{\pii[14285]{14285}}
+\newcommand{\supervisorNames}{\pii[AAG / SMK]{AAG, SMK}}
+
+\newcommand{\repoCode}{\piiurl{https://github.com/exeme-project/hmon}}
+\newcommand{\repoDocs}{\piiurl{https://github.com/skifli/hmon-nea}}
+
+\usepackage{etoolbox}
+
+% Just general boilerplate here
+\newcommand{\regspec}[3]{%
+	\csdef{spec@code@#1}{#2}%
+	\csdef{spec@desc@#1}{#3}%
+}
+
+% BEGIN: Defining 'em all here
+\regspec{AO2.2.1}{AO2.2.1}{Solvability by computational methods \& amenability justification.}
+% END: Defining 'em all here
+
+% Ze inline tag
+\newcommand{\speclabel}[1]{%
+	\ifcsname spec@code@#1\endcsname%
+		\label{spec:#1}%
+		\noindent{\footnotesize\ttfamily\color{black!55}%
+			[\csuse{spec@code@#1}]\ \textit{\csuse{spec@desc@#1}}%
+		}%
+	\else%
+		\PackageWarning{spec_engine}{Unknown specification key '#1'}%
+	\fi%
+}

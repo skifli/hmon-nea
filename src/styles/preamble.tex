@@ -1,0 +1,61 @@
+% Typography & core stuff
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{parskip}
+
+% Math
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Tables & rulez
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{makecell}
+\usepackage{float}
+\usepackage{xcolor}
+
+% Custom col headers
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+
+% Code and algos
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\SetAlCapFnt{\small\bfseries\ttfamily}
+\SetAlCapNameFnt{\small\ttfamily}
+
+% Graphics & captions
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\captionsetup{font={small,tt},labelfont=bf}
+
+% Lists
+\usepackage{enumitem}
+\setlist{topsep=2pt, itemsep=2pt, parsep=0pt}
+\usepackage{tocloft}
+
+% Styling links
+\usepackage{hyperref}
+\hypersetup{
+	hidelinks,
+	pdfborder={0 0 0},
+	pdftitle={hmon NEA Writeup},
+	pdfauthor={Aneeq Weerasinghe}
+}
+
+% Heads + footers config
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small \ttfamily hmon NEA Writeup}
+\rhead{\small \ttfamily OCR A-Level CS (H446)}
+\lfoot{\small \ttfamily Candidate: \candidateNum{} | Centre: \centreNum{}}
+\rfoot{\small \ttfamily Page \thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\footrulewidth}{0.3pt}
+\setlength{\headheight}{14.5pt}

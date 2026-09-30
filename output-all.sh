@@ -1,0 +1,1 @@
+find . \( -type d \( -name ".*" ! -name "." -o -path "./src/out" \) -prune \) -o \( -type f -not -empty -not -name "flake.lock" -not -name "*.log" -exec tail -n +1 {} + \) > ../combined_output.txt && mv ../combined_output.txt combined_output.txt
