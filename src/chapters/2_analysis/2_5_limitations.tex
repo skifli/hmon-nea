@@ -1,0 +1,123 @@
+\subsection{Limitations of the Proposed Solution}
+\speclabel{AO3.1.3c}
+
+No endpoint protection software can be fully invulnerable, as creating defensive software requires balancing security and performance, which is an inherent trade-off that cannot be resolved without compromises. Therefore, acknowledging and justifying the limitations of a solution is essential for assessing its real-world viability.
+
+To provide an in-depth appraisal, the limitations of \projectNameFormatted\ have been categorised into five boundaries: operating privileges, heuristic evasion, false positives, sampling window latency, and platform scope constraints.
+
+\subsubsection{Operating Privileges: User-space}
+
+The most significant architectural compromise in \projectNameFormatted\ is the decision to operate only within user space (Ring~3), rather than using a kernel-mode driver (Ring~0).
+
+\paragraph{Vulnerability implication:}
+Operating within user space means that \projectNameFormatted\ executes with the privileges of a standard user. If an attacker already has access to compromised software on the host, or if kernel-level malware (such as a rootkit) is present, the attacker could theoretically terminate the \projectNameFormatted\ process.
+
+\paragraph{Engineering justification:}
+However, developing a custom Windows Kernel driver has catastrophic risks if it is not executed properly:
+
+\begin{itemize}
+	\item \textbf{System instability:} Any null-pointer dereference or similar in Ring~0 triggers an immediate Blue Screen of Death---a hazard heightened by the memory-unsafe nature of C.
+	\item \textbf{Driver signing:} Modern editions of Windows have strict Kernel-Mode Code Signing (KMCS) requirements. Loading an unsigned kernel driver requires putting Windows into a persistent test-signing mode, which then in turn weakens the security of the host. Obtaining a production-signed driver requires an expensive commercial Extended Validation (EV) code-signing certificate and attestation by the Windows Hardware Quality Labs (WHQL).
+\end{itemize}
+
+All of the above reasons make it far too complicated and expensive to go forward with the kernel-level driver. Because BadUSB attacks are exploits requiring physical access that are intended to execute commands \textit{before} malware is present, user-space interception provides more than adequate protection without risking the stability of the system. This is an unfortunate limitation of the proposed solution, but one that can be satisfactorily worked around.
+
+\subsubsection{Heuristic Evasion: Human-mimicking}
+
+The heuristic engine in \projectNameFormatted\ relies on the premise that microcontrollers send inputs deterministically ($\bar{x} < 10\,\text{ms}$, $s^2 \approx 0$).
+
+\paragraph{Vulnerability implication:}
+An attacker could theoretically program a microcontroller to introduce (pseudo-)random delays between keystrokes, for example using a Gaussian distribution, mimicking human typing speeds ($\sim 50\text{--}70\,\text{WPM}$) and artificial variance ($s^2 > 25\,\text{ms}^2$). Such an input stream would evade the heuristic detection thresholds.
+
+\paragraph{Engineering justification \& mitigation:}
+Mathematically, if a set of inputs produces timing distributions that are indistinguishable from those of an actual human, a purely temporal heuristic cannot classify it as artificial (at least, without having an unacceptably high false-positive rate).
+
+However, this evasion technique imposes a large operational penalty on the attacker:
+\begin{equation}
+	t_{\text{exploit}} = \frac{\text{Payload Length (characters)}}{\text{Typing Speed (characters per second)}}
+\end{equation}
+
+A typical PowerShell payload might be anywhere from 400 to 800 characters long, for example. At machine speeds (1,000 WPM), injection takes under $800\,\text{ms}$. If forced to type at human speeds ($\sim 60\,\text{WPM}$ or $\sim 5$ characters per second), the same payload takes \textbf{between 80 and 160 seconds} to type onto the screen. This completely removes the stealth advantage of a physical BadUSB attack (which relies on the victim looking away for only a brief few seconds), allowing the victim or bystanders to intervene physically.
+
+\subsubsection{Macros: False-positives}
+
+Some legitimate peripherals might under certain circumstances behave identically to BadUSB microcontrollers:
+
+\paragraph{Vulnerability implication:}
+Macropads, streaming decks, mechanical keyboards, and various other pieces of hardware running custom open-source firmware (such as QMK/ZMK) often feature macro functionality that injects pre-recorded strings at high speeds. When triggered, these devices produce rapid bursts of inputs which \projectNameFormatted's heuristic engine will flag.
+
+\paragraph{Engineering justification \& mitigation:}
+The heuristic engine cannot infer the intent of the user. To prevent this limitation from alienating power users like \stakeholdersPU, \projectNameFormatted\ will use its persistent whitelist. On first connection, the user will need to permanently verify their device through the GUI; once added, all inputs from that device bypass the heuristic engine entirely, allowing the user to macro to their heart's content.
+
+\subsubsection{Sample Window: Initial Latency}
+
+To compute the sample variance ($s^2$), the sliding window buffer requires a minimum number of events ($M$) to meet statistical significance.
+
+\paragraph{Vulnerability implication:}
+Until $M$ keystrokes have been registered, \projectNameFormatted\ cannot perform valid calculations. An attacker could theoretically then design a minimal payload of fewer than $M$ keystrokes (e.g., $M < 5$) to execute a brief command before the threshold is evaluated.
+
+\paragraph{Engineering justification \& mitigation:}
+If $M$ is set too high (e.g., $M = 30$), the attack may complete before detection. If $M$ is too low (e.g., $M = 3$), normal double-taps could trigger false positives. By choosing $M = 10\text{--}15$, \projectNameFormatted\ can take the best of both worlds. A meaningful payload requires summoning the command line (\texttt{Win+R} takes 2 keystrokes) and typing the executable name (\texttt{powershell} takes 10 keystrokes), ensuring that the window fills well before the terminating $\langle\text{Enter}\rangle$ key is pressed.
+
+\subsubsection{Platform Scope: Windows Lock-in}
+
+\paragraph{Scope implication:}
+Because \projectNameFormatted\ interfaces directly with the Win32 API, it cannot be executed on Unix-based systems such as macOS or Linux.
+
+\paragraph{Engineering justification \& mitigation:}
+Windows has the vast majority of consumer and enterprise desktop market share and is the primary target for BadUSB attacks. As well as this, it is the OS that my Primary User \stakeholdersPU\ uses. However, to ensure future cross-platform portability, the codebase will separate the heuristic engine from the platform-specific layer, ensuring that porting to Linux can be done in future versions without having to rewrite the other modules.
+
+\subsubsection{Summary Limitations Matrix}
+
+Table~\ref{tab:limitations_matrix} lists the technical limits of the solution, the reasoning behind each trade-off, and the mitigations used.
+
+	{\small
+		\begin{xltabular}{\textwidth}{@{} p{2.8cm} L L L @{}}
+			\caption{Limitations and Mitigations Matrix} \label{tab:limitations_matrix} \\
+			\toprule
+			\textbf{Limitation} & \textbf{Description} & \textbf{Reasoning} & \textbf{Mitigation} \\
+			\midrule
+			\endfirsthead
+
+			\toprule
+			\textbf{Limitation} & \textbf{Description} & \textbf{Reasoning} & \textbf{Mitigation} \\
+			\midrule
+			\endhead
+
+			\midrule
+			\multicolumn{4}{r@{}}{\scriptsize\textit{Continued on next page\dots}} \\
+			\endfoot
+
+			\bottomrule
+			\endlastfoot
+
+			\textbf{User-space boundary} &
+			Runs in Ring~3; vulnerable to termination by pre-existing rootkits or high-level malware. &
+			Kernel-mode drivers (Ring~0) risk Blue Screens of Death and need costly EV code-signing certificates. Out of scope for NEA. &
+			BadUSB is a physical attack method, starting before infection. Intercepting keystrokes at Ring~3 can still stop malware before it is executed. \\
+			\addlinespace[0.8em]
+
+			\textbf{Human-mimicking payloads} &
+			Microcontrollers programmed with artificial jitter can bypass the heuristic. &
+			Statistically identical distributions cannot be separated without increasing the risk of false positives. &
+			Slowing injection down forces the payloads to take 1--3 minutes to type, eliminating their stealth and exposing the attack visually. \\
+			\addlinespace[0.8em]
+
+			\textbf{Macro false-positives} &
+			Macropads and streaming decks can emit rapid bursts that may trigger false-positive alerts. &
+			Mathematical analysis on its own cannot work out user intent. &
+			Device attribution allows whitelisting, bypassing heuristics for said hardware. \\
+			\addlinespace[0.8em]
+
+			\textbf{Sampling window latency} &
+			Heuristics require $M$ events (typically 10--15 keys) before results are valid. &
+			Calculating variance on smaller windows ($M < 5$) leads to high false-positive rates. &
+			Meaningful payloads require at least 15--20 keystrokes before execution, ensuring the window fills before the final $\langle\text{Enter}\rangle$. \\
+			\addlinespace[0.8em]
+
+			\textbf{Platform lock-in} &
+			Implementation relies on the Win32 API, prohibiting cross-platform execution. &
+			Windows is the most used OS in the world. Modularisation can also allow porting to Linux in the future. &
+			The heuristic engine is a separate portable module; only the platform-interfacing one requires OS-specific calls. \\
+		\end{xltabular}
+	}

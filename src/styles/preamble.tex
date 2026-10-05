@@ -5,6 +5,9 @@
 \usepackage{microtype}
 \usepackage{inconsolata}
 \usepackage{parskip}
+\usepackage{moresize} % Gives HUGE and stuff lol
+\usepackage{comment} % Thank GOODNESS this exists lol
+\usepackage{wrapfig}
 
 % Math
 \usepackage{amsmath}
@@ -13,6 +16,7 @@
 % Tables & rulez
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{xltabular}
 \usepackage{array}
 \usepackage{makecell}
 \usepackage{float}
@@ -27,6 +31,10 @@
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 \SetAlCapFnt{\small\bfseries\ttfamily}
 \SetAlCapNameFnt{\small\ttfamily}
+
+% Flow charties
+\usepackage{smartdiagram}
+\usesmartdiagramlibrary{additions}
 
 % Graphics & captions
 \usepackage{graphicx}
@@ -44,18 +52,37 @@
 \hypersetup{
 	hidelinks,
 	pdfborder={0 0 0},
-	pdftitle={hmon NEA Writeup},
-	pdfauthor={Aneeq Weerasinghe}
+	pdftitle={\projectName\ NEA Writeup},
+	pdfauthor={\candidateName}
 }
+
+% Diagrams with TikZ
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, arrows.meta, chains, positioning, calc}
 
 % Heads + footers config
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{\small \ttfamily hmon NEA Writeup}
+\lhead{\small \ttfamily \projectName\ NEA Writeup}
 \rhead{\small \ttfamily OCR A-Level CS (H446)}
 \lfoot{\small \ttfamily Candidate: \candidateNum{} | Centre: \centreNum{}}
 \rfoot{\small \ttfamily Page \thepage}
 \renewcommand{\headrulewidth}{0.3pt}
 \renewcommand{\footrulewidth}{0.3pt}
 \setlength{\headheight}{14.5pt}
+
+% Referencing & bibliography - BibLaTeX with Biber
+\usepackage[
+	backend=biber,
+	style=numeric,
+	sorting=none,        % Numbers references in the order they appear in text [1], [2]...
+	urldate=iso,         % Ze standard YYYY-MM-DD access date format
+	seconds=true
+]{biblatex}
+
+\addbibresource{assets/references.bib}
+
+% Callouts!
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}

@@ -1,0 +1,41 @@
+\begin{figure}[H]
+	\centering
+	\resizebox{\textwidth}{!}{%
+		\begin{tikzpicture}[
+			node distance = 1.0cm and 1.3cm,
+			font=\LARGE,
+			box/.style={draw=gray!60, rectangle, rounded corners=3pt, minimum height=1.3cm, minimum width=2.6cm, align=center, line width=0.6pt, inner sep=10pt},
+			device/.style={box, fill=blue!5, draw=blue!30},
+			os/.style={box, fill=gray!5, draw=gray!30},
+			\projectName/.style={box, fill=teal!5, draw=teal!40, line width=0.9pt},
+			pass/.style={box, fill=green!5, draw=green!40},
+			blocked/.style={box, dashed, fill=red!5, draw=red!40},
+			arrow/.style={-{Stealth[length=2.5mm]}, line width=0.7pt, draw=gray!80},
+			passarrow/.style={-{Stealth[length=2.5mm]}, line width=0.8pt, draw=green!60!black},
+			alertarrow/.style={-{Stealth[length=2.5mm]}, line width=0.8pt, draw=red!70!black, dashed}
+			]
+
+			\node[device] (badusb) {\textbf{Malicious HID}\\E.g., RP2040};
+			\node[device, below=0.6cm of badusb] (human) {\textbf{Legitimate}\\Keyboard};
+
+			\node[os, right=1.4cm of badusb] (controller) {\textbf{USB Host Controller}\\Enumeration};
+
+			\node[os, right=1.3cm of controller] (driver) {\textbf{OS Driver Stack}\\E.g., kbdhid.sys};
+
+			\node[\projectName, right=1.3cm of driver] (\projectName) {\textbf{\projectNameFormatted\ Defence}\\\texttt{WH\_KEYBOARD\_LL}};
+
+			\node[pass, right=1.4cm of \projectName] (target) {\textbf{Input Passed ($\sigma^2 > 0$)}\\Target process receives input};
+			\node[blocked, below=0.7cm of target] (drop) {\textbf{Input Blocked ($\sigma^2 \approx 0$)}\\Suppressed \& logged};
+
+			\draw[arrow] (badusb.east) -- (controller.west);
+			\draw[arrow] (human.east) -| (controller.south);
+			\draw[arrow] (controller) -- (driver);
+			\draw[arrow] (driver) -- (\projectName);
+
+			\draw[passarrow] (\projectName.east) -- (target.west);
+			\draw[alertarrow] (\projectName.south) |- (drop.west);
+		\end{tikzpicture}%
+	}
+	\caption{A simplified overview of the architecture of the proposed solution}
+	\label{fig:proposed_solution}
+\end{figure}

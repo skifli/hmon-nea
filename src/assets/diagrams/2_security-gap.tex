@@ -1,0 +1,38 @@
+\begin{figure}[H]
+	\centering
+	\resizebox{\textwidth}{!}{% Force the diagram to scale down perfectly to the text width
+		\begin{tikzpicture}[
+			node distance = 1.0cm and 1.2cm,
+			font=\LARGE, % Clean sans-serif font for readability
+			box/.style={draw=gray!60, rectangle, rounded corners=3pt, minimum height=1.3cm, minimum width=2.5cm, align=center, line width=0.6pt, inner sep=10pt},
+			device/.style={box, fill=blue!5, draw=blue!30},
+			os/.style={box, fill=gray!5, draw=gray!30},
+			sec/.style={box, dashed, fill=red!5, draw=red!40},
+			arrow/.style={-{Stealth[length=2mm]}, line width=0.7pt, draw=gray!80}
+			]
+
+			\node[device] (badusb) {\textbf{Malicious HID}\\E.g., RP2040};
+			\node[device, below=0.6cm of badusb] (human) {\textbf{Legitimate}\\Keyboard};
+
+			\node[os, right=1.4cm of badusb] (controller) {\textbf{USB Host Controller}\\Enumeration};
+			\node[os, right=1.2cm of controller] (driver) {\textbf{OS Driver Stack}\\E.g., kbdhid.sys};
+
+			\node[os, right=1.2cm of driver] (queue) {\textbf{Win32 Input Queue}\\(WM\_KEYDOWN)};
+
+			\node[os, right=1.2cm of queue] (target) {\textbf{Target Process Inputs}\\E.g., powershell.exe};
+
+			\node[sec, below=1.2cm of target] (defender) {\textbf{Traditional Antivirus}\\Inspects files/RAM};
+
+			\draw[arrow] (badusb.east) -- (controller.west);
+			\draw[arrow] (human.east) -| (controller.south);
+			\draw[arrow] (controller) -- (driver);
+			\draw[arrow] (driver) -- (queue);
+			\draw[arrow] (queue) -- (target);
+
+			\draw[arrow, dashed, draw=red!60] (defender) -- node[right, font=\LARGE, text=red!80!black] {Monitors} (target);
+			\node[below=0.1cm of defender, font=\LARGE, text=gray] {Blind to keystroke origin};
+		\end{tikzpicture}%
+	}
+	\caption{Attack-vector diagram (on Windows) showing similarity to legitimate inputs}
+	\label{fig:security_gap}
+\end{figure}

@@ -1,0 +1,36 @@
+\begin{figure}[H]
+	\centering
+	\resizebox{\textwidth}{!}{%
+		\begin{tikzpicture}[
+			node distance = 1.0cm and 1.4cm,
+			font=\LARGE,
+			box/.style={draw=gray!60, rectangle, rounded corners=3pt, minimum height=1.3cm, minimum width=2.6cm, align=center, line width=0.6pt, inner sep=10pt},
+			thread/.style={box, fill=blue!5, draw=blue!30},
+			queue/.style={box, fill=orange!5, draw=orange!40, line width=0.9pt},
+			pass/.style={box, fill=green!5, draw=green!40},
+			alert/.style={box, dashed, fill=red!5, draw=red!40},
+			arrow/.style={-{Stealth[length=2.5mm]}, line width=0.7pt, draw=gray!80},
+			passarrow/.style={-{Stealth[length=2.5mm]}, line width=0.8pt, draw=green!60!black},
+			alertarrow/.style={-{Stealth[length=2.5mm]}, line width=0.8pt, draw=red!70!black, dashed}
+			]
+
+			\node[thread] (t1) {\textbf{Thread 1: Hook Producer}\\\texttt{WH\_KEYBOARD\_LL} callback\\$O(1)$ fast execution};
+
+			\node[queue, right=1.4cm of t1] (queue) {\textbf{Thread-Safe Queue}\\Circular ring buffer\\Shared memory};
+
+			\node[thread, right=1.4cm of queue] (t2) {\textbf{Thread 2: Math Engine}\\Consumes queued events\\Calculates $\bar{x}$, $s^2$, updates state};
+
+			\node[pass, below=1.0cm of t1] (pass) {\textbf{Pass to OS (Whitelisted)}\\\texttt{CallNextHookEx}\\No desktop latency};
+
+			\node[alert, below=1.0cm of t2] (ui) {\textbf{Thread 3: UI Dispatcher}\\Async warning dialog\\Non-blocking notification};
+
+			\draw[arrow] (t1.east) -- (queue.west);
+			\draw[arrow] (queue.east) -- (t2.west);
+
+			\draw[passarrow] (t1.south) -- (pass.north);
+			\draw[alertarrow] (t2.south) -- (ui.north);
+		\end{tikzpicture}%
+	}
+	\caption{Multi-threaded producer-consumer architecture of \projectNameFormatted}
+	\label{fig:concurrency_pipeline}
+\end{figure}

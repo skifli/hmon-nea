@@ -1,0 +1,179 @@
+\subsection{Stakeholders \& Needs}
+\speclabel{AO3.1.2a}
+
+Security software suffers from a well-known problem: if it introduces noticeable input latency or generates frequent false positives, users will inevitably stop using it. That nullifies its point: a piece of security software that is turned off provides zero protection to the user.
+
+To ensure \projectNameFormatted\ remains practical in varied real-world circumstances, three real-world stakeholders were consulted. Each stakeholder was carefully selected to represent a distinct set of hardware, and operational requirements.
+
+\subsubsection{Stakeholder Identification \& Profiles}
+
+{\small
+	% xltabular is way better than the old table stuff I was using :)
+	\begin{xltabular}{\textwidth}{@{} p{2.4cm} L L @{}}
+		\caption{Stakeholders, Contexts, and Needs} \label{tab:stakeholder_matrix} \\
+		\toprule
+		\textbf{Stakeholder} & \textbf{Contexts} & \textbf{Needs} \\
+		\midrule
+		\endfirsthead
+
+		% Header for subsequent pages
+		\toprule
+		\textbf{Stakeholder} & \textbf{Contexts} & \textbf{Needs} \\
+		\midrule
+		\endhead
+
+		% Footer on pages before a split
+		\midrule
+		\multicolumn{3}{r@{}}{\scriptsize\textit{Continued on next page\dots}} \\
+		\endfoot
+
+		% Footer on the very last page
+		\bottomrule
+		\endlastfoot
+
+		\textbf{\stakeholdersPU}\par
+		\textit{\footnotesize (Primary User)} &
+		Has a high-end Windows desktop used for various activities such as gaming, and programming. The desktop is in a secure home environment. Hardware peripherals (e.g., a custom mechanical keyboard, and multi-button mouse) are relatively permanent. &
+		\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt, topsep=0pt, partopsep=0pt, before=\leavevmode\vspace{-1.2\baselineskip}]
+			\item \textbf{Sub-millisecond latency:} Gaming requires zero perceptible input lag ($<1\,\text{ms}$).
+			\item \textbf{Macro accommodation:} Rapid hotkey scripts must not be flagged as a false-positive.
+			\item \textbf{Background execution:} Unobtrusive system tray icon; no focus-stealing popups during full-screen applications.
+		\end{itemize} \\
+		\addlinespace[0.6em]
+
+		\textbf{\stakeholdersSU}\par
+		\textit{\footnotesize (Secondary User)} &
+		Portable laptop user frequently working in untrusted, public environments (e.g., libraries). High risk of opportunistic attacks where an unattended device is plugged in while the user is away. &
+		\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt, topsep=0pt, partopsep=0pt, before=\leavevmode\vspace{-1.2\baselineskip}]
+			\item \textbf{Zero-trust policy:} New unrecognised devices must default to a restricted state.
+			\item \textbf{High-visibility alerts:} Clear prompt requiring explicit user intervention should be used.
+			\item \textbf{Zero database bloat:} Automatic cleanup of old data on application close / device disconnection.
+		\end{itemize} \\
+		\addlinespace[0.6em]
+
+		\textbf{\stakeholdersTU}\par
+		\textit{\footnotesize (Tertiary User)} &
+		Windows laptop user who regularly uses ephemeral peripherals in various environments (e.g., presentation clickers for F1 in Schools, temporary flash drives). &
+		\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt, topsep=0pt, partopsep=0pt, before=\leavevmode\vspace{-1.2\baselineskip}]
+			\item \textbf{Volatile trust:} Ability to temporarily permit a device (e.g., ``Allow Once''), without permanently adding it to the database.
+			\item \textbf{Low friction:} Must be able to distinguish legitimate repeated inputs (e.g., PageUp / PageDown from a presentation clicker) from actual malicious activity.
+			\item \textbf{No CLI dependency:} Protection must be functional without having to open the command prompt.
+		\end{itemize} \\
+	\end{xltabular}
+}
+
+\begin{note}
+	While portable laptop users would face a higher exposure to opportunistic attacks, \stakeholdersPU\ was selected as the primary user because his usage profile has the strictest operational constraints (sub-millisecond latency and macro accommodation). Ensuring \projectNameFormatted\ is not intrusive on his system will guarantee that it will run seamlessly on lower-demand systems as well.
+\end{note}
+
+\subsubsection{Primary User Interview Plan}
+
+To establish quantitative non-functional needs, an in-depth interview was conducted with \stakeholdersPU. As a power user, he represents the strictest benchmark for the project---if the software passes his standards, it will relatively easily satisfy general desktop users.
+
+The interview focused on three main objectives:
+
+\begin{enumerate}
+	\item Establishing performance tolerances.
+	\item Learning about how his keyboard macros worked to prevent false-positives.
+	\item Determining how security notifications should behave when full-screen windows are focused.
+\end{enumerate}
+
+\subsubsection{Primary User Interview Transcript}
+
+\begin{description}[style=multiline, leftmargin=3.2cm, font=\normalfont\ttfamily\bfseries]
+	\item[\stakeholdersME\ (Me):] What hardware and operating system do you use, and how often do you add or change your peripherals?
+	\item[\stakeholdersPU:] I use a custom-built Windows 11 desktop with a mechanical keyboard and a high-polling mouse. Since it's a fixed desktop in my bedroom, I don't usually swap my main peripherals---they stay plugged into the I/O ports permanently. Occasionally I might plug in a drawing tablet or an external gamepad, but my main peripherals do not change often.
+
+	\item[\stakeholdersME:] In competitive gaming, what level of input delay would you consider unacceptable?
+	\item[\stakeholdersPU:] Any perceptible input lag would be unacceptable. When playing games at 144\,Hz or 240\,Hz, a frame lasts between $4.1\,\text{ms}$ and $6.9\,\text{ms}$. If background software delayed key presses by even a single frame, then everything would feel sluggish. It has to execute at preferably imperceptible speeds---if not, I would disable it (at least during the time I'm playing the game).
+
+	\item[\stakeholdersME:] Do you use any keyboard macros, and what concerns would you have in relation to them?
+	\item[\stakeholdersPU:] Yes, I have programmable keys on my keyboard for automated text inputs---things like sending ``ggs'' in game chat. Because these macros output text faster than a human physically types, I’d be worried that \projectNameFormatted\ might mistake my keyboard for a BadUSB attack and kill my input method mid-match.
+
+	\item[\stakeholdersME:] If an unknown USB device were plugged in, how would you want the software to alert you without crashing or breaking whatever application is active?
+	\item[\stakeholdersPU:] If I am in the middle of a full-screen game, definitely the worst thing is a popup that steals focus or minimises the active window. The daemon should preferably block the device in the background, send a non-intrusive notification, and only show an on-screen dialog if I explicitly click it or if extremely high-risk activity is detected.
+
+	\item[\stakeholdersME:] How should the system handle trusting your permanent devices so you don't have to keep re-authorising them?
+	\item[\stakeholdersPU:] Once I have verified my keyboard, I never want to see a prompt for it again. It should be saved permanently so that when Windows boots up, my keyboard works instantly with zero checks, and zero delay.
+\end{description}
+
+\subsubsection{Primary User Interview Analysis}
+
+\stakeholdersPU's feedback was used to inform three architectural choices:
+
+{\small
+\begin{xltabular}{\textwidth}{@{} p{3.4cm} L L @{}}
+	\caption{Translation of PU needs into constraints} \label{tab:user_requirements_mapping} \\
+	\toprule
+	\textbf{PU Feedback} & \textbf{Technical Implication} & \textbf{Architectural Effect} \\
+	\midrule
+	\endfirsthead
+
+	% Header on subsequent pages
+	\toprule
+	\textbf{PU Feedback} & \textbf{Technical Implication} & \textbf{Architectural Effect} \\
+	\midrule
+	\endhead
+
+	% Footer on pages before a split
+	\midrule
+	\multicolumn{3}{r@{}}{\scriptsize\textit{Continued on next page\dots}} \\
+	\endfoot
+
+	% Footer on the very last page
+	\bottomrule
+	\endlastfoot
+
+	% Row 1
+	Input lag leads to immediate software removal. &
+	The hook callback thread cannot perform heavy calculations or disk I/O that risks hanging it. &
+	Use the $O(1)$ fast-return design path in Thread 1; offload the heavier calculations to Thread 2 via a ring buffer. \\
+	\addlinespace[0.8em]
+
+	% Row 2
+	Hardware macros can mimic BadUSB attacks. &
+	Running heuristics on all devices will cause high false-positive rates for power users. &
+	Use an in-memory whitelist. Whitelisted devices bypass heuristic analysis entirely. \\
+	\addlinespace[0.8em]
+
+	% Row 3
+	Popups must not steal window focus or minimise games. &
+	We cannot make any changes to the GUI / new GUI surfaces that risk stealing focus from the user even for a fraction of a second. &
+	Use in-built Windows APIs such as the one for notifications. This means if the user is in a full-screen application Do-Not-Disturb is usually on, and so the notification will not immediately show---but can be read later. \\
+\end{xltabular}
+\par
+}
+
+\subsubsection{Secondary Consultations Analysis}
+
+Feedback gathered from \stakeholdersSU\ and \stakeholdersTU\ also gave complementary constraints that informed design choices:
+
+\paragraph{\stakeholdersSU:}
+Working in public environments introduces the threat of opportunistic physical attacks. If an attacker inserts a BadUSB device while the laptop is briefly unattended, the software cannot rely on notifications that will never be acted on.
+\begin{itemize}
+	\item \textbf{Requirement:} When an unrecognised peripheral is connected and exhibits automated typing behaviour, \projectNameFormatted\ must use a strict ``block-and-alert'' policy.
+	\item \textbf{Design response:} The alert window must clearly identify the device name, Vendor ID (VID), and Product ID (PID), while also giving the user clear, discrete actions: \textbf{[Block Permanently]}, \textbf{[Allow Once]}, or \textbf{[Trust Always]}.
+\end{itemize}
+
+\paragraph{\stakeholdersTU:}
+The primary use case here involves connecting temporary devices, such as a presentation clicker used for F1 in Schools presentations. These devices appear as standard HID keyboards sending discrete scancodes (e.g., $\langle\text{PageUp}\rangle$, $\langle\text{PageDown}\rangle$, or $\langle\text{F5}\rangle$).
+\begin{itemize}
+	\item \textbf{Requirement:} If every temporary device plugged into the laptop is permanently added to the database, the whitelist becomes bloated with stale data---making the GUI cluttered. Furthermore, entering complex passwords to allow a simple clicker creates a lot of unnecessary friction.
+	\item \textbf{Design response:} \projectNameFormatted\ has a \textbf{Session-Only Trust} option---peripherals approved with this option are only stored in RAM. When the device is unplugged or the system reboots, the temporary authorisation is discarded, keeping the database clean.
+\end{itemize}
+
+\begin{note}
+	Presentation clickers also won't trigger the heuristic model: someone advancing slides presses a button once every few minutes. Because the $\text{IKI}$ values are enormous and non-continuous, the sliding window buffer is never filled, meaning presentation clickers will not trigger false-positives (unless there is a multitude of inputs in quick succession).
+\end{note}
+
+\subsubsection{Cross-Platform Architectural Considerations}
+
+While Microsoft Windows is the primary target for the project---due to its dominance especially in the corporate sector, and its unified Win32 architecture---cross-platform compatibility was also considered:
+
+\begin{itemize}
+	\item \textbf{Windows (Target):} Provides the Win32 input subsystem (\texttt{WH\_KEYBOARD\_LL} and Raw Input API), allowing suppression without custom kernel-mode drivers (which can cause severe system instability if they break).
+	\item \textbf{Linux (e.g., NixOS):} Linux does not have an equivalent global hook that can selectively suppress keystrokes across Wayland or X11 without root privileges. Instead, on Linux it requires binding to the kernel input event subsystem through \texttt{evdev} and \texttt{uinput} (\texttt{/dev/input/event*}).
+	\item \textbf{macOS:} Modern macOS versions have strict sandboxing and notarisation. Suppressing input requires Accessibility permissions, and low-level peripheral monitoring requires other complex frameworks. Notably, Apple also recently introduced their own native "USB Accessory Security" in macOS Ventura, which blocks new USB data connections until unlocked by the user.
+\end{itemize}
+
+To ensure the codebase remains extensible, \projectNameFormatted's core detection code will be separate from the code for interfacing with the OS. Only the input capture module will contain Windows-specific API calls, allowing the engine to be ported to Linux (\texttt{evdev}) in future iterations without needing to rewrite other parts of the program.

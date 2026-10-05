@@ -1,0 +1,97 @@
+\subsection{Computational Methods Feasibility}
+
+\subsubsection{Why the Problem is Amenable to a Computational Approach}
+\speclabel{AO3.1.1b}
+
+To understand why this problem requires a computational approach, one only needs to look at the physical limits of human biology, as compared to the raw speed of modern hardware.
+
+As established in Equation~\ref{eq:2_1_timeline}, an automated BadUSB attack completes its entire lifecycle in under two seconds. In contrast, the average human reaction time to a sudden visual stimulus is approximately $250\,\text{ms}$ \cite{thorpe1996speed}. Even if an attentive user noticed the terminal immediately, the physical action of processing what happened and reaching out and unplugging the rogue USB device takes several seconds. By that point, it is far too late, as the entire payload has been transferred and executed. Manual human intervention is simply far too slow to stop these attacks.
+
+Furthermore, the data processing required to spot an attack is fundamentally computational. Evaluating keystroke data requires calculating rolling statistical variances across minute time periods. Doing this manually, or eyeballing typing speed, is impossible.
+
+A programmatic approach running directly on the host machine can intercept, parse, and evaluate inputs in sub-millisecond time. Because the vulnerability is inherently caused by automation through hardware, the only viable defence is more automation---in this case software that can also execute at the speed of the machine, suppressing malicious inputs before they ever reach the target application.
+
+\subsubsection{Thinking Abstractly}
+\speclabel{AO3.1.1a}
+
+The USB specification includes thousands of pages covering a multitude of topics that are simply irrelevant to what we are trying to achieve. To solve our problem, almost all of this low-level detail can be safely discarded---for example:
+
+\begin{itemize}
+	\item We do not need to know whether the device is plugged into USB 2.0, USB 3.0, or a USB-C hub.
+	\item We do not need to monitor USB power states.
+\end{itemize}
+
+Instead, we can abstract the problem down to the essentials that matter for behavioural analysis. These two core entities are as follows:
+
+\begin{enumerate}
+	\item \textbf{The device identity:} Abstracted to the hardware handle (\texttt{HANDLE hDevice}) provided by the OS.
+	\item \textbf{The keystroke event:} Abstracted to a tuple representing a discrete state change in time:
+	      \begin{equation}
+		      e = \left( \text{hDevice},\, \text{vkCode},\, t,\, \text{state} \right)
+	      \end{equation}
+	      where $\text{vkCode}$ is the virtual key code, $t$ is the exact timestamp, and $\text{state}$ denotes whether the key was pressed or released.
+\end{enumerate}
+
+By using this simplified model, \projectNameFormatted's heuristic engine can process the exact same (abstracted) event stream, whether an input arrives via USB, Bluetooth, or otherwise.
+
+\subsubsection{Thinking Ahead}
+\speclabel{AO3.1.1a}
+
+Because \projectNameFormatted\ operates at a low level of the operating system's input pipeline, any latency introduced by our code would make the entire desktop feel sluggish. Thinking ahead therefore means anticipating bottlenecks and also attack vectors for malicious actors:
+
+\begin{itemize}
+	\item \textbf{Pre-caching trusted devices:} Reading files from disk during a keystroke hook adds unacceptable I/O latency. To prevent this, \projectNameFormatted\ thinks ahead by reading the configuration file into an in-memory data structure immediately on startup. When an input occurs, verifying whether a device is trusted is an instantaneous $O(1)$ memory lookup, requiring no disk I/O.
+	\item \textbf{Pre-allocating memory buffers:} Dynamically allocating memory through \texttt{malloc()} inside a Windows hook is dangerous, as contention for heap locks can add non-deterministic delays. Instead, fixed-size circular ring buffers (storing the last $M$ timestamps) can be pre-allocated for each active device upon its first detection.
+	\item \textbf{Anticipating attacker countermeasures:} Attackers aware of simple rate limits might try to evade detection by artificially injecting tiny delays into their payloads. We can think ahead by checking both the sample variance ($s^2$) \textbf{and} the average interval ($\bar{x}$). To bypass both checks simultaneously, an attacker would have to slow their script down to match natural human typing speeds, taking upwards of 30 seconds to inject a payload. This nullifies the core stealth advantage of BadUSB attacks, making visual detection of them much easier.
+\end{itemize}
+
+\subsubsection{Thinking Procedurally \& Modularisation}
+\speclabel{AO3.1.1a}
+
+To keep the codebase maintainable and easy to test, the solution has been decomposed into five distinct modules, each with their own responsibility:
+
+\begin{enumerate}
+	\item \textbf{Input interception module:} Interfaces with the Win32 API to register and manage the low-level hook (\texttt{WH\_KEYBOARD\_LL}) and Raw Input listener.
+	\item \textbf{Device attribution module:} Assigns raw messages with their hardware handles (\texttt{HANDLE hDevice}), associating all keys with their physical port.
+	\item \textbf{Statistical heuristic engine:} Takes an array of timestamps, computes $\bar{x}$ and $s^2$, and determines whether the stream is synthetic or human.
+	\item \textbf{Configuration \& state manager:} Handles the serialisation and deserialisation of persistent records to and from disk.
+	\item \textbf{UI \& alert dispatcher:} Manages the GUI, and user warning dialogs when an attack is flagged.
+\end{enumerate}
+
+Modularisation is particularly useful for the heuristic engine. Because it is completely separate from the Windows API, one can unit-test it in isolation using pre-recorded datasets, without needing actual hardware plugged in.
+
+\subsubsection{Thinking Logically}
+\speclabel{AO3.1.1a}
+
+The decision-making within \projectNameFormatted\ follows deterministic logic designed to make unambiguous pass-or-block decisions on every key press:
+
+\begin{itemize}
+	\item \textbf{Condition 1 (known safe):} Is the originating device handle in the whitelist?
+	      \[\text{If TRUE} \implies \text{Pass immediately } \quad (O(1)\text{ fast path})\]
+	\item \textbf{Condition 2 (known threat):} Has the originating device handle already been flagged or blacklisted?
+	      \[\text{If TRUE} \implies \text{Drop immediately}, \text{ log event}\]
+	\item \textbf{Condition 3 (unverified device):} If the device is new, add the timestamp to its sliding window. Once the window contains $M$ events, begin evaluating the heuristic:
+	      \begin{equation}
+		      \text{IsMalicious} = (s^2 < \theta_{\text{variance}}) \land (\bar{x} < \theta_{\text{interval}})
+	      \end{equation}
+	      If true, the device handle is blacklisted, and an alert is triggered.
+\end{itemize}
+
+\begin{note}
+	Thinking logically also requires fail-safe design. If the \projectNameFormatted\ process ever encounters an unexpected fatal error, a registered exception handler should make sure that \texttt{UnhookWindowsHookEx} is called before the process finally terminates. This guarantees the user is never left with a locked keyboard that leads to an unresponsive desktop, which is obviously unwanted.
+\end{note}
+
+\subsubsection{Thinking Concurrently}
+\speclabel{AO3.1.1a}
+
+\input{assets/diagrams/2_concurrency-pipeline.tex}
+
+When an application installs a low-level keyboard hook (\texttt{WH\_KEYBOARD\_LL}), Windows invokes the callback function every time a key is pressed. The OS monitors this callback with a strict timeout defined in the Windows Registry (\texttt{LowLevelHooksTimeout}, typically between $200\,\text{ms}$ and $1,000\,\text{ms}$). If the callback function blocks or takes too long to return, Windows will consider the hook unresponsive and remove it from the global hook chain as well, which leaves the system unprotected.
+
+To solve this, \projectNameFormatted\ uses a concurrent design, illustrated in Figure~\ref{fig:concurrency_pipeline}:
+
+\begin{enumerate}
+	\item \textbf{Thread 1 (Hook Producer):} The high-priority hook only checks the whitelist, and pushes the raw timestamp and device data into a thread-safe circular ring buffer. It does nothing more so as not to delay the callback.
+	\item \textbf{Thread 2 (Math Engine):} A background worker thread continuously polls the ring buffer. It pops incoming events, performs the calculations, and logs events to disk.
+	\item \textbf{Thread 3 (UI Dispatcher):} If Thread 2 detects an attack, it dispatches an alert request to Thread 3. Alert windows block inputs until the user interacts (with \textit{another} device). This allows the UI to remain open indefinitely while Thread 1 and Thread 2 continue monitoring and suppressing further incoming keystrokes without locking up the desktop.
+\end{enumerate}

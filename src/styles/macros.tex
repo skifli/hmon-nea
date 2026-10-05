@@ -1,1 +1,70 @@
-% Empty for now...
+% Admonition / Callouts!
+
+% Base style
+\tcbset{
+	minimalcallout/.style={
+			blanker,
+			breakable,
+			left=10pt,
+			right=0pt,
+			top=2pt,
+			bottom=2pt,
+			before skip=0.8em,
+			after skip=0.8em,
+			borderline west={1.2pt}{0pt}{#1}
+		}
+}
+
+% 1. Custom titulo de la callout: \begin{callout}[TAG]{Title} ... \end{callout}
+% Default tag is INFO if omitted.
+\NewDocumentEnvironment{callout}{O{INFO} m}{%
+	\begin{tcolorbox}[minimalcallout=black!75]
+		\noindent{\small\ttfamily\bfseries [#1: #2]}\par\vspace{0.2em}
+		\small
+		}{%
+	\end{tcolorbox}
+}
+
+% \begin{note}, \begin{warning}, \begin{important}
+\NewDocumentEnvironment{note}{}{%
+	\begin{tcolorbox}[minimalcallout=black!50]
+		\noindent{\small\ttfamily\bfseries [NOTE]}\par\vspace{0.2em}
+		\small
+		}{%
+	\end{tcolorbox}
+}
+
+\NewDocumentEnvironment{important}{}{%
+	\begin{tcolorbox}[minimalcallout=black!85]
+		\noindent{\small\ttfamily\bfseries [IMPORTANT]}\par\vspace{0.2em}
+		\small
+		}{%
+	\end{tcolorbox}
+}
+
+\NewDocumentEnvironment{warning}{}{%
+	\begin{tcolorbox}[minimalcallout=black]
+		\noindent{\small\ttfamily\bfseries [WARNING]}\par\vspace{0.2em}
+		\small
+		}{%
+	\end{tcolorbox}
+}
+
+% EXAMPLES:
+\begin{comment}
+\begin{note}
+	Ya ya.
+\end{note}
+
+\begin{warning}
+	Wa ha.
+\end{warning}
+
+\begin{callout}[VULNERABILITY]{Kaboom}
+	Ah hah!
+\end{callout}
+
+\begin{callout}[LIMITATION 1]{Kachow}
+	Ba ha!
+\end{callout}
+\end{comment}

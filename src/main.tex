@@ -11,17 +11,17 @@
 % Disable header on the first page
 \thispagestyle{empty}
 
-{\Huge \ttfamily \textbf{hmon}} \\[0.2cm]
-{\large \slshape HID monitor --- Tackling BadUSB attacks}
+{\Huge \ttfamily \textbf{\projectName}} \\[0.2cm]
+{\Large \slshape HID monitor---Tackling BadUSB attacks}
 
 \vspace{1cm}
 
-\centerline{\small \ttfamily [ ABSTRACT ]}
+\centerline{\normalsize \ttfamily \textbf{[ ABSTRACT ]}}
 \vspace{0.1cm}
 
 \begin{quotation}
 	\noindent
-	\textbf{hmon} is a FOSS application designed to protect devices from BadUSB attacks. It continually monitors all connected HID devices for malicious inputs, and provides a user-friendly GUI for managing connected input devices.
+	\textbf{\projectName}\ is a FOSS application designed to protect devices from BadUSB attacks. It continually monitors all connected HID devices for malicious inputs, and provides a user-friendly GUI for managing connected input devices.
 \end{quotation}
 
 \vspace{0.1cm}
@@ -57,12 +57,15 @@
 \newpage
 
 % Sections of NEA
-\input{chapters/0_spec_matrix.tex}
+\input{chapters/1_spec-matrix.tex}
 \newpage
 
 % Main chapters
-\input{chapters/1_analysis.tex}
+\input{chapters/2_analysis.tex}
 % \newpage
 % \input{chapters/2_design.tex}
+
+\newpage
+\printbibliography[heading=bibintoc, title={References}]
 
 \end{document}

@@ -1,0 +1,80 @@
+\subsection{Problem Definition}
+\speclabel{AO3.1.3b}
+
+\subsubsection{Problem Context}
+
+The USB (Universal Serial Bus) specification was initially standardised in 1996 by the USB Implementers Forum (USB-IF) \cite{usb10spec}. It was designed under many foundational premises---relevant to us are the ones that prioritised the convenience of plug-and-play, and backwards compatibility with physically secure operating environments. By superseding legacy communication protocols---such as PS/2 (for peripheral input), and RS-232 (for serial transport)---USB managed to do what was not done before: abstract away low-level hardware differences to create a universal, host-controlled, tiered-star topology, that used standard descriptor negotiation.
+
+When a device connects to a USB port, the controller in the host initiates part of the USB protocol called the hardware enumeration sequence (over ``default Control Endpoint Zero \texttt{EP0}''). The host issues standardised \texttt{GET\_DESCRIPTOR} requests to determine the peripheral's requirements, and the peripheral responds with a hierarchical series of descriptors:
+
+\begin{itemize}
+	\item the device descriptor (specifying Vendor ID and Product ID),
+	\item configuration descriptors, and
+	\item interface descriptors.
+\end{itemize}
+
+When an interface reports a Class code of \texttt{0x03}, Subclass \texttt{0x01}, and Protocol \texttt{0x01}, the host OS recognises the device as a standard Human Interface Device (HID) Boot Keyboard \cite{usbSpecBC03h}.
+
+But what if it isn't? Crucially, the USB protocol specifications enforce no authentication, or mutual hardware identity attestation during this enumeration handshake. As well as this, all modern operating systems rely implicitly on the integrity of the reported descriptors, automatically trusting them without user verification. Consequently, the whole operating system's security architecture operates on an axiom of implicit trust: any peripheral that can (even just claim to) adhere to the HID protocol is granted instantaneous authority to act as a trusted \textbf{human} input device---even if it is not.
+
+\subsubsection{The Vulnerability}
+
+This blind spot in the trust model is not a fault of the USB protocol per se, but it does open the door to a class of vulnerabilities commonly known as keystroke injection or ``BadUSB'' attacks. High-performance microcontrollers that feature full-speed USB interfaces are readily available nowadays---from development boards like the Raspberry Pi RP2040 to dedicated penetration testing tools such as Hak5's Rubber Ducky. Much of this hardware can also readily run open-source USB device stacks such as TinyUSB, making the barrier to entry even lower than before. Consequently, these programmable microcontrollers can easily masquerade as a standard USB HID keyboard while maintaining programmatic control over the injected keystrokes.
+
+This exploit relies on the physical and mechanical disparity between humans entering keystrokes on a keyboard, and synthetic streams from a microcontroller:
+
+\begin{enumerate}
+	\item \textbf{Human (jittered):} Natural typing rates have a wide range---in one study of 136 million keystrokes from 168,000 volunteers, the average user typed 52 WPM (words per minute) \cite{dhakal2018observations}. Many factors affect this - from more superficial criteria like age, to more complex ones such as motor-neuron latency. When humans type, the Inter-Keystroke Intervals (that is the time spent \textit{between} keystrokes) also vary - not just between individuals, but also in a way that exhibits high variance. That is, it is extremely unlikely for every single keystroke in a set interval to have the exact same time spent between key presses. This makes sense as we are constantly moving our hands around the keyboard when typing, and so the distance required to move to the same key is always changing, and therefore so is the time it takes to get there, resulting in $\sigma^2 > 0$.
+	\item \textbf{Microcontroller (deterministic):} A programmable microcontroller can send synthetic input payloads directly at the theoretical polling limit of the USB bus---equivalent to (sustained) typing speeds exceeding 1,000\,\text{WPM}. It follows then that Inter-Keystroke-Intervals are constant, and so then their variance is essentially null---unless their creator has added in (pseudo-)random intervals in an attempt to try and make the fabricated inputs look slightly more legitimate. As defences against these attacks are fleetingly rare at a non-corporate level, usually this would not be the case, meaning $\sigma^2 \approx 0$.
+\end{enumerate}
+
+\begin{note}
+	Typematic auto-repeat (keys held down generating regular character inputs) is fundamentally different from pressing the same key the same number of times. Specifically, they can be filtered for at the Windows API level, ensuring only discrete key-down transitions are analysed.
+\end{note}
+
+\input{assets/diagrams/2_security-gap.tex}
+
+An automated physical attack is able to exploit the chain in Figure~\ref{fig:security_gap} through a reliably reproducible, rapid (usually 1--2 seconds) set of steps:
+{\footnotesize
+\begin{equation}
+	\label{eq:2_1_timeline}
+	t_{\text{insert}} \xrightarrow{\sim 150\,\text{ms}} \text{Enumeration} \xrightarrow{\sim 50\,\text{ms}} \text{Shortcut: } \texttt{WIN + R} \xrightarrow{\sim 100\,\text{ms}} \text{Payload Injection} \xrightarrow{\sim 800\,\text{ms}} \text{Execution}
+\end{equation}}
+
+Upon initialisation of the connection, the microcontroller can issue the hotkey combination \texttt{Win+R} to summon the Windows Run dialog, introduce an imperceptibly nominal delay (e.g., $100\,\text{ms}$), and then rapidly output an obfuscated, single-line command (for example, \texttt{powershell -NoP -NonI -W Hidden -Exec Bypass -Enc ...}). This command is never written to the disk so cannot be detected by a traditional antivirus, and it can execute any payload it wants, undetected, as if it were the user. The physical hardware which initiated the attack can be removed within seconds of insertion, leaving no evidence of malicious activity.
+
+\begin{note}
+	If the attack were to subsequently download malware (for example), then yes a traditional antivirus could be useful. However, for BadUSB attacks the traditional antivirus is analogous to the ``cure'' in ``prevention is better than cure''---that is, it can try to stop the attack \textit{after} it has already started and had time to execute. What it cannot do is \textit{prevent} the attack, because it has no idea that it is not the user typing on their keyboard.
+\end{note}
+
+\subsubsection{The Defence Gap}
+
+Traditional security measures, including commercial Antivirus (e.g., Kaspersky); Endpoint Detection and Response (EDR) platforms (e.g., CrowdStrike Falcon); and OS User Account Control (UAC), fail fundamentally to stop keystroke injection attacks. This breakdown in the defence system is a result of the architectural design, illustrated in Figure~\ref{fig:security_gap}.
+
+Traditional endpoint security monitors system activity across three different layers:
+\begin{enumerate}
+	\item \textbf{File system filter drivers:} For example on Windows, EDR agents register with the Windows File System Manager (\texttt{fltmgr.sys}) to intercept operations on the file-system. These agents can evaluate the metadata of files, and calculate cryptographic hashes when payloads are written to \textit{persistent} disk volumes. Keystroke injection attacks completely circumvent this detection by piping (usually base64-encoded) strings directly into the command interpreters, which allows payloads to execute with minimal disk usage.
+	\item \textbf{Process and API telemetry:} Using kernel callbacks and API hooks, programs can subscribe to and detect spurious process creation---one of such ways being analysing who the parent (i.e., creator) of said process was. However, when a command interpreter is spawned via keyboard shortcuts it is spawned legitimately by \texttt{explorer.exe}, and so it looks like the user truly triggered it. Because the OS cannot differentiate between human inputs from the keyboard, and a microcontroller synthesising inputs, the sequence again bypasses heuristic detection.
+	\item \textbf{Privilege boundaries and UAC:} Access control mechanics such as UAC, even when restricted to the Windows Secure Desktop, cannot stop keystroke injection. Because both devices look like a keyboard to the OS, they share identical desktop input privileges and so a payload can programmatically approve elevation prompts (e.g., by sending $\langle\text{Left Arrow}\rangle$ to toggle focus from \texttt{No} to \texttt{Yes}, followed by $\langle\text{Enter}\rangle$).
+\end{enumerate}
+
+Because the existing defences operate downstream of the true root of the security flaw, they are entirely blind to anomalies within the interaction between hardware and the OS. Defending against BadUSB attacks requires a lower-level of prevention---intercepting raw hardware inputs before they are consumed by the target applications.
+
+\subsubsection{Initial Solution}
+
+\input{assets/diagrams/2_proposed-solution.tex}
+
+To eliminate the hardware-level gap of trust demonstrated in Figure~\ref{fig:security_gap}, my project proposes \projectNameFormatted. Rather than attempting later inspection of already-downloaded files, it operates between the low-level hardware and the higher-level applications, as illustrated in Figure~\ref{fig:proposed_solution}.
+
+The components of \projectNameFormatted\ address four fundamental requirements:
+\begin{enumerate}
+	\item \textbf{Keystroke interception:} Without running any Ring 0-level code, and instead using a low-level Windows input hook through the Win32 API's \texttt{SetWindowsHookExW}, the engine can intercept various events---such as \texttt{WM\_KEYDOWN}. When malicious behaviour is detected, the callback can consume the event, dropping the keystroke before it reaches the desired application.
+	\item \textbf{Device-specific attribution:} While \texttt{WH\_KEYBOARD\_LL} allows suppression, the data it provides does not allow identification by device. However, intercepting all keystrokes without device attribution adds a risk of complete denial-of-service if a legitimate keyboard is suppressed by accident. As well as this, the Vendor ID (VID) and Product ID (PID) descriptors the device sends could also be trivially spoofed in the microcontroller firmware. To resolve this, using the Win32 Raw Input model alongside the hook, allows the hardware handle and unique device interface path assigned by Windows Plug-and-Play to be obtained. This is needed as the Raw Input model can observe input but not block keys, and conversely \texttt{WH\_KEYBOARD\_LL} can block keys but not tell which physical device sent them. Windows Plug-and-Play assigns discrete device handles / paths to distinct physical ports---even if two devices present identical spoofed VIDs and PIDs concurrently. Combined this allows easy de-multiplexing, so every single keyboard event can be categorised based on the device it originated from, and one can trust the identification method to not be able to be bypassed by adversaries.
+	\item \textbf{Decoupled architecture:} There is a strict execution time limit on callbacks (found in the registry) which means that blocking the hook thread can cause the OS to go as far as to drop the hook, silently. To counter this, a multi-threaded architecture will be used: a producer thread will write input events to a buffer the other thread can read, and a dedicated worker thread will perform the actual mathematical calculations. Together, this will ensure that the responsiveness of the device is maintained, and the user experiences no tangible slowdowns.
+	\item \textbf{Statistical variance:} Rather than relying on static threshold limits that could lead to both false-positives and false-negatives (e.g., raw WPM), \projectNameFormatted\ can model human biomechanics using a custom variance algorithm. Inter-Keystroke Intervals are tracked across a window of $M$ events ($w = \{\text{IKI}_1, \text{IKI}_2, \dots, \text{IKI}_M\}$), calculating both the sample mean ($\bar{x}$) and sample variance ($s^2$):
+	      \begin{equation}
+		      \label{eq:2_1_equation}
+		      \bar{x} = \frac{1}{M}\sum_{k=1}^{M} \text{IKI}_k, \quad s^2 = \frac{1}{M-1}\sum_{k=1}^{M} (\text{IKI}_k - \bar{x})^2
+	      \end{equation}
+	      Deterministic microcontrollers outputting fast streams of keys will have variance approaching zero ($s^2 < \theta_{\text{threshold}}$) at exceptionally low interval means ($\bar{x} < 10\,\text{ms}$), which provides a robust mathematical heuristic for detecting attacks.
+\end{enumerate}
