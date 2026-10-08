@@ -7,9 +7,9 @@ To establish a clear baseline, and avoid reinventing approaches that are already
 
 Kaspersky Endpoint Security (KES) provides an enterprise-tier protection module \cite{kasperskyBadUSB}:
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 	\centering
-	\begin{subfigure}[b]{0.8\textwidth}
+	\begin{subfigure}[b]{0.60\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{assets/images/2_loc_screen_kes11_badusb_authorization.png}
 		\caption{4-digit PIN verification prompt}
@@ -24,10 +24,10 @@ When a USB device enumerates as an HID keyboard, Kaspersky's proprietary kernel 
 
 The user must physically read this value from the screen and type it using the newly connected device. Because a malicious microcontroller operates blindly without a camera, it cannot determine the dynamically-generated code and fails the challenge.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 	\ContinuedFloat
 	\centering
-	\begin{subfigure}[b]{1\textwidth}
+	\begin{subfigure}[b]{0.80\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{assets/images/2_loc_screen_kes12_badusb_settings.png}
 		\caption{Administrative module configuration}
@@ -54,9 +54,9 @@ Figure~\ref{fig:kaspersky_settings} shows the administrative settings panel, det
 
 Beamgun is an open-source, user-space utility created by security researcher Josh Lospinoso to mitigate BadUSB attacks on Windows workstations \cite{lospinosoBeamgun}.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.8\textwidth]{assets/images/2_loc_screen_beamgun.png}
+	\includegraphics[width=0.62\textwidth]{assets/images/2_loc_screen_beamgun.png}
 	\caption{Beamgun user interface and event log during a device insertion event \cite{lospinosoBeamgun}}
 	\label{fig:beamgun_ui}
 \end{figure}
@@ -84,27 +84,28 @@ As can be seen in the event log in Figure~\ref{fig:beamgun_ui}, when a USB perip
 
 \subsubsection{OS-Level Gatekeeping (macOS Ventura \& USBGuard)}
 
-Recently, some operating systems have also attempted to solve the BadUSB problem. The most prominent consumer implementation is Apple's ``USB Accessory Security'', introduced in macOS 13 Ventura for Apple Silicon MacBooks \cite{appleAccessorySecurity}.
+Recently, some operating systems have also attempted to solve the BadUSB problem. The most prominent consumer implementation is Apple's ``USB Accessory Security'', that was introduced in macOS 13 Ventura, however only for Apple Silicon MacBooks \cite{appleAccessorySecurity}.
 
 \noindent
-\begin{tabular}{@{}p{0.62\textwidth}@{\hspace{0.04\textwidth}}p{0.34\textwidth}@{}}
-	\textbf{How it works:} Rather than letting the OS automatically enumerate new devices, macOS halts the connection at the controller level, restricting newly connected peripherals to power delivery only.
+\begin{minipage}[t]{0.58\textwidth}
+	\vspace{0pt}
+	\textbf{How it works:} Rather than letting the OS automatically enumerate new devices when they are connected, macOS instead stops the connection at the controller level which restricts newly connected peripherals to power delivery only. This means that initially, no data transfer can.
 
-	\smallskip
-	As shown in Figure~\ref{fig:macos_prompt}, the OS prompts: ``Allow accessory to connect?''. The data lines remain disabled until approved via the built-in trackpad or an existing keyboard.
-	 &
+	\medskip
+	As shown in Figure~\ref{fig:macos_prompt}, the OS prompts on connection: ``Allow accessory to connect?''. The data lines remain disabled until approved via an already connected input device - such as the built-in trackpad or an existing keyboard.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\textwidth}
 	\vspace{0pt}
 	\centering
-	\includegraphics[height=3.1cm, keepaspectratio]{assets/images/2_macos-tahoe-26-allow-accessory-to-connect-dialog.png}
-	\vspace{-0.4em}
+	\includegraphics[width=\linewidth, keepaspectratio]{assets/images/2_macos-tahoe-26-allow-accessory-to-connect-dialog.png}
 	\captionof{figure}{macOS prompt \cite{appleAccessorySecurity}}
 	\label{fig:macos_prompt}
-\end{tabular}
+\end{minipage}
 
 % Restored float specifiers so the image renders normally at the top of Page 22
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.8\textwidth]{assets/images/2_macos-tahoe-26-system-settings-privacy-and-security-security-wired-accessories.png}
+	\includegraphics[width=0.72\textwidth]{assets/images/2_macos-tahoe-26-system-settings-privacy-and-security-security-wired-accessories.png}
 	\caption{System Settings peripheral access policy options \cite{appleAccessorySecurity}}
 	\label{fig:macos_settings}
 \end{figure}
@@ -143,7 +144,8 @@ A comparable implementation in enterprise Linux is \textbf{USBGuard} \cite{usbgu
 In response to the limitations observed in the existing solutions, three development approaches were evaluated to determine how \projectNameFormatted\ should be built:
 
 {\small
-\begin{xltabular}{\textwidth}{@{} p{3.2cm} L L @{}}
+\renewcommand{\arraystretch}{1.25}
+\begin{xltabular}{\textwidth}{@{} P{3.2cm} L L @{}}
 	\caption{Evaluation of Potential Approaches for \projectNameFormatted} \label{tab:approaches_eval} \\
 	\toprule
 	\textbf{Approach} & \textbf{Advantages \& Suitability} & \textbf{Disadvantages \& Limitations} \\
@@ -155,41 +157,38 @@ In response to the limitations observed in the existing solutions, three develop
 	\midrule
 	\endhead
 
-	\bottomrule
-	\endlastfoot
+	\tablecontinuation{3}
 
 	\textbf{Approach 1:}\par Kernel-level driver\par\textit{\footnotesize (Ring 0, C/C++)} &
-	\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt]
+	\begin{tablelist}
 		\item Absolute control over the USB Request Block (URB) driver stack.
 		\item Cannot be bypassed by other malware or tampering.
-	\end{itemize} &
-	\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt]
+	\end{tablelist} &
+	\begin{tablelist}
 		\item Any implementation bugs can cause a Kernel Panic / Blue Screen of Death (BSOD).
 		\item 64-bit Windows requires expensive Extended Validation (EV) code-signing certificates.
-	\end{itemize} \\
-	\addlinespace[0.8em]
+	\end{tablelist} \\
 
 	\textbf{Approach 2:}\par High-level language\par\textit{\footnotesize (Python)} &
-	\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt]
+	\begin{tablelist}
 		\item Rapid development lifecycle and various pre-made statistical packages.
 		\item Broad portability across operating systems.
-	\end{itemize} &
-	\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt]
+	\end{tablelist} &
+	\begin{tablelist}
 		\item Garbage collection cycles and runtime interpretation add latency, violating \stakeholdersPU's requirements.
 		\item Lacks native Win32 hook primitives.
-	\end{itemize} \\
-	\addlinespace[0.8em]
+	\end{tablelist} \\
 
 	\textbf{Approach 3:}\par Compiled native daemon\par\textit{\footnotesize (C + Win32 API)}\par\textbf{[CHOSEN]} &
-	\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt]
+	\begin{tablelist}
 		\item Minimal execution footprint and hook latency.
 		\item Deterministic memory layouts and no runtime garbage collection pauses.
 		\item Direct integration with the Win32 API without third-party libraries.
-	\end{itemize} &
-	\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt]
-		\item Requires manual memory management and strict memory-safety.
+	\end{tablelist} &
+	\begin{tablelist}
+		\item Requires manual memory management and strict memory safety.
 		\item Platform-specific Win32 bindings require abstraction for other OS ports.
-	\end{itemize} \\
+	\end{tablelist} \\
 \end{xltabular}
 }
 

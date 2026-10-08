@@ -4,7 +4,8 @@
 To evaluate the success of \projectNameFormatted\ objectively during development and evaluation (post-development), a comprehensive set of measurable success criteria has been established. Each criterion is categorised by section, justified by constraints, mapped to an explicit method to verify it, and cross-referenced with the preceding analysis sections.
 
 	{\small
-		\begin{xltabular}{\textwidth}{@{} l p{3.2cm} L L p{2.2cm} @{}}
+		\renewcommand{\arraystretch}{1.2}
+		\begin{xltabular}{\textwidth}{@{} l P{3.0cm} L L P{2.2cm} @{}}
 			\caption{Measurable Success Criteria Matrix} \label{tab:success_criteria} \\
 			\toprule
 			\textbf{ID} & \textbf{Requirement} & \textbf{Justification} & \textbf{Verification} & \textbf{Reference} \\
@@ -16,12 +17,7 @@ To evaluate the success of \projectNameFormatted\ objectively during development
 			\midrule
 			\endhead
 
-			\midrule
-			\multicolumn{5}{r@{}}{\scriptsize\textit{Continued on next page\dots}} \\
-			\endfoot
-
-			\bottomrule
-			\endlastfoot
+			\tablecontinuation{5}
 
 			\multicolumn{5}{@{}l}{\textbf{Category 1: Device Enumeration \& Attribution}} \\
 			\midrule
@@ -31,180 +27,162 @@ To evaluate the success of \projectNameFormatted\ objectively during development
 			Ensures monitoring begins before an automated payload can perform its attack. &
 			Compare the timestamp of OS \texttt{WM\_DEVICECHANGE} with our own logs. &
 			Section 2.1.2 (Equation~\ref{eq:2_1_timeline}) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC1.2} &
 			The software must correctly obtain the Vendor ID (VID) and Product ID (PID) from connected USB devices. &
-			Required to give recognisable device metadata to the user in the UI. &
-			Compare \projectNameFormatted's VID/PID strings against Windows Device Manager's properties. &
+			Required to display recognisable device metadata to the user in the UI. &
+			Compare \projectNameFormatted's VID/PID strings against Windows Device Manager properties. &
 			Section 2.1.1 (Enumeration) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC1.3} &
 			The software must obtain and assign discrete hardware handles to different physical ports. &
-			Required to prevent an untrusted device from inheriting trust by spoofing a connected keyboard's VID/PID on another port. &
-			Connect two identical keyboards simultaneously; verify that distinct handles are assigned. &
+			Prevents an untrusted device from inheriting trust by spoofing a connected keyboard's VID/PID on another port. &
+			Connect two identical keyboards simultaneously; verify distinct handles are assigned. &
 			Section 2.1.4 (Attribution) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC1.4} &
 			The software must detect device disconnection and remove temporary records from memory within $500\,\text{ms}$. &
 			Prevents memory leakage when devices are unplugged. &
 			Unplug a device; verify via logs that the relevant nodes were deallocated. &
 			Section 2.3.5 (\stakeholdersTU) \\
-			\addlinespace[1.0em]
+			\addlinespace[0.8em]
 
 			\multicolumn{5}{@{}l}{\textbf{Category 2: Keystroke Interception \& Suppression}} \\
 			\midrule
 
 			\textbf{SC2.1} &
 			The software must intercept all keyboard events before they reach applications. &
-			Needed for proactive protection; allows malicious keys to be dropped. &
+			Required for proactive protection; allows malicious keys to be dropped. &
 			Type in Notepad; verify the program hook receives \texttt{WM\_KEYDOWN} messages. &
 			Section 2.1.4 (Interception) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC2.2} &
 			The software must suppress keystrokes from untrusted or blacklisted devices. &
-			Ensures that known-malicious or unwanted devices do not have the possibility to input any keys. &
+			Ensures known-malicious or unwanted devices cannot input keystrokes. &
 			Send keystrokes from a blacklisted microcontroller; confirm no text appears. &
 			Section 2.2.5 (Logic) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC2.3} &
 			The software must forward keystrokes from whitelisted devices to the OS without modification. &
 			Ensures normal keyboard usage is entirely unaffected for legitimate users. &
 			Type on a whitelisted keyboard; confirm there are no dropped keys. &
 			Section 2.3.3 (\stakeholdersPU) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC2.4} &
 			The software must unhook from Windows upon exit or crash. &
 			Guarantees the user is never left with an unresponsive desktop if \projectNameFormatted\ closes. &
-			Terminate the process through Task Manager; make sure that keyboard input functions normally. &
+			Terminate the process through Task Manager; verify keyboard input functions normally. &
 			Section 2.2.5 (Fail-Safe) \\
-			\addlinespace[1.0em]
+			\addlinespace[0.8em]
 
 			\multicolumn{5}{@{}l}{\textbf{Category 3: Heuristic \& Statistical Analysis}} \\
 			\midrule
 
 			\textbf{SC3.1} &
 			The software must record inter-keystroke intervals ($\text{IKI}$) into a rolling circular buffer. &
-			Provides the sample data required to perform the heuristic calculations. &
-			Input 20 keystrokes; check the logs to make sure the buffer is saturated. &
+			Provides sample data required to perform heuristic calculations. &
+			Input 20 keystrokes; verify through logs that the buffer is saturated. &
 			Section 2.2.3 (Thinking Ahead) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC3.2} &
 			The software must calculate the sample mean interval ($\bar{x}$) with high precision. &
-			Used to evaluate the raw typing rate and determine whether input speed is human or not. &
+			Evaluates the raw typing rate to determine whether input speed is human or not. &
 			Inject a synthetic stream at exact $10\,\text{ms}$ intervals; confirm calculated mean is $\bar{x} = 10.0\,\text{ms} \pm 0.5\,\text{ms}$. &
 			Section 2.1.4 (Variance Math) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC3.3} &
 			The software must calculate sample variance ($s^2$) across the active buffer window. &
 			Differentiates human jitter from deterministic microcontroller output. &
 			Use a pre-recorded benchmark array; make sure the computed $s^2$ matches the actual calculation within $0.01\,\text{ms}^2$. &
 			Section 2.1.2 (Biomechanics) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC3.4} &
 			The software must flag an anomaly when $s^2 < 2.0\,\text{ms}^2$ and $\bar{x} < 15.0\,\text{ms}$ once $M \ge 10$. &
 			The core detection thresholds for BadUSB attacks. &
 			Simulate a BadUSB attack; confirm that a threat is detected. &
 			Section 2.2.5 (Decision Logic) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC3.5} &
 			The software must not flag natural human typing as malicious. &
-			Prevents false positives during fast human typing. &
-			Have a fast human typist enter a 100-word paragraph; verify zero threats are detected. &
+			Prevents false positives during high-speed human typing. &
+			Have a fast typist enter a 100-word paragraph; verify zero threats are flagged. &
 			Section 2.3.1 (Usability) \\
-			\addlinespace[1.0em]
+			\addlinespace[0.8em]
 
 			\multicolumn{5}{@{}l}{\textbf{Category 4: Whitelist \& Storage Management}} \\
 			\midrule
 
 			\textbf{SC4.1} &
 			The software must serialise and save approved devices to a persistent \texttt{whitelist.json} file. &
-			Allows trusted status to persist across sessions. &
-			Approve a device in UI; open \texttt{whitelist.json} and verify a valid JSON structure. &
+			Allows trusted status to persist across system reboots. &
+			Approve a device in the UI; verify \texttt{whitelist.json} is updated with valid JSON contents. &
 			Section 2.3.3 (\stakeholdersPU) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC4.2} &
 			The software must load and parse \texttt{whitelist.json} into memory upon initialisation. &
 			Ensures permanent peripherals work immediately on boot without prompts. &
-			Restart the daemon with the whitelist; verify devices appear as approved within the UI. &
+			Restart the daemon; verify approved device handles load into memory and appear in the UI. &
 			Section 2.2.3 (Pre-caching) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC4.3} &
 			The software must support ``Session-Only'' trusted devices stored only in RAM. &
-			Allows for temporary peripherals without cluttering the configuration. &
-			Approve device as ``Session-Only''; restart the daemon and verify the device is unverified. &
+			Allows for temporary peripherals without cluttering persistent storage. &
+			Approve device as ``Session-Only''; restart daemon and verify device reverts to unverified. &
 			Section 2.3.5 (\stakeholdersTU) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC4.4} &
-			The software must allow users to view and remove trust for any device via the UI. &
-			Gives the user full control over which peripherals have access. &
-			Remove a device in the UI; verify subsequent keystrokes are analysed by the heuristics engine. &
+			The software must allow users to view and revoke trust for any device via the UI. &
+			Gives the user full control over the privileges of peripherals. &
+			Revoke trust in the UI; confirm subsequent keystrokes are analysed by the heuristic engine. &
 			Section 2.3.5 (\stakeholdersTU) \\
-			\addlinespace[1.0em]
+			\addlinespace[0.8em]
 
 			\multicolumn{5}{@{}l}{\textbf{Category 5: User Interface \& Alerts}} \\
 			\midrule
 
 			\textbf{SC5.1} &
 			The software must have a tray icon reflecting status (Active / Alert). &
-			Provides an unobtrusive background icon without cluttering the taskbar. &
-			Check the system tray area; confirm the icon is present and the right-click menu opens. &
+			Provides an unobtrusive background indicator without cluttering the taskbar. &
+			Check the system tray area; confirm the icon reflects the current state and context menu functions. &
 			Section 2.3.3 (\stakeholdersPU) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC5.2} &
 			The software must display a high-priority alert window upon detecting a BadUSB attack. &
-			Ensures the user is immediately aware of what is happening. &
-			Simulate an attack; verify the alert window renders, displaying the device name, VID, and PID. &
+			Ensures immediate awareness of detected attacks. &
+			Simulate an attack; verify alert window renders displaying device name, VID, and PID. &
 			Section 2.3.5 (\stakeholdersSU) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC5.3} &
 			The alert window must provide explicit actions: [Trust Always], [Allow Once], and [Block]. &
-			Enables intuitive and non-technical decisions. &
-			Click each button in testing; confirm the corresponding state is updated in memory or the configuration. &
+			Enables intuitive, non-technical decisions. &
+			Click each action in testing; confirm the corresponding state and configuration update accordingly. &
 			Section 2.3.5 (\stakeholdersSU) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC5.4} &
 			The software must not steal window focus or minimise full-screen applications when background warnings occur. &
-			Prevents disruption to full-screen games or videos. &
-			Run a full-screen application; trigger a background warning and make sure the game focus is maintained. &
+			Prevents disruption during full-screen games or video playback. &
+			Run a full-screen application; trigger an alert and confirm window focus is preserved. &
 			Section 2.3.3 (\stakeholdersPU) \\
-			\addlinespace[1.0em]
+			\addlinespace[0.8em]
 
 			\multicolumn{5}{@{}l}{\textbf{Category 6: Performance \& Reliability}} \\
 			\midrule
 
 			\textbf{SC6.1} &
 			The hook thread must complete execution in under $0.5\,\text{ms}$. &
-			Eliminates input lag, so there are zero dropped frames while gaming. &
-			Benchmark the callback using the Windows API, and verify the latency is $<500\,\mu\text{s}$. &
+			Eliminates input lag so there are zero dropped frames during gaming. &
+			Benchmark the callback using high-resolution timers; verify latency is $< 500\,\mu\text{s}$. &
 			Section 2.3.3 (\stakeholdersPU) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC6.2} &
 			The daemon must use less than $25\,\text{MB}$ of RAM during normal operation. &
-			Guarantees a lightweight footprint suitable for resource-constrained laptops. &
-			Monitor memory usage in Task Manager over a 1-hour idle/active period. &
+			Guarantees a lightweight footprint suitable for resource-constrained systems. &
+			Monitor memory usage in Task Manager over a 1-hour active period. &
 			Section 2.6.1 (Hardware Reqs) \\
-			\addlinespace[0.6em]
 
 			\textbf{SC6.3} &
-			The multi-threaded design must function concurrently without race conditions / deadlocks. &
-			Maintains system stability during a large number of simultaneous inputs across multiple keyboards. &
+			The multi-threaded design must function concurrently without race conditions or deadlocks. &
+			Maintains system stability during rapid simultaneous inputs across multiple keyboards. &
 			Flood the input queue using two keyboards simultaneously; verify no deadlocks or crashes occur. &
 			Section 2.2.6 (Concurrency) \\
 		\end{xltabular}

@@ -72,7 +72,8 @@ Windows has the vast majority of consumer and enterprise desktop market share an
 Table~\ref{tab:limitations_matrix} lists the technical limits of the solution, the reasoning behind each trade-off, and the mitigations used.
 
 	{\small
-		\begin{xltabular}{\textwidth}{@{} p{2.8cm} L L L @{}}
+		\renewcommand{\arraystretch}{1.2}
+		\begin{xltabular}{\textwidth}{@{} P{2.6cm} L L L @{}}
 			\caption{Limitations and Mitigations Matrix} \label{tab:limitations_matrix} \\
 			\toprule
 			\textbf{Limitation} & \textbf{Description} & \textbf{Reasoning} & \textbf{Mitigation} \\
@@ -84,36 +85,27 @@ Table~\ref{tab:limitations_matrix} lists the technical limits of the solution, t
 			\midrule
 			\endhead
 
-			\midrule
-			\multicolumn{4}{r@{}}{\scriptsize\textit{Continued on next page\dots}} \\
-			\endfoot
-
-			\bottomrule
-			\endlastfoot
+			\tablecontinuation{4}
 
 			\textbf{User-space boundary} &
 			Runs in Ring~3; vulnerable to termination by pre-existing rootkits or high-level malware. &
 			Kernel-mode drivers (Ring~0) risk Blue Screens of Death and need costly EV code-signing certificates. Out of scope for NEA. &
 			BadUSB is a physical attack method, starting before infection. Intercepting keystrokes at Ring~3 can still stop malware before it is executed. \\
-			\addlinespace[0.8em]
 
 			\textbf{Human-mimicking payloads} &
 			Microcontrollers programmed with artificial jitter can bypass the heuristic. &
 			Statistically identical distributions cannot be separated without increasing the risk of false positives. &
 			Slowing injection down forces the payloads to take 1--3 minutes to type, eliminating their stealth and exposing the attack visually. \\
-			\addlinespace[0.8em]
 
 			\textbf{Macro false-positives} &
 			Macropads and streaming decks can emit rapid bursts that may trigger false-positive alerts. &
 			Mathematical analysis on its own cannot work out user intent. &
 			Device attribution allows whitelisting, bypassing heuristics for said hardware. \\
-			\addlinespace[0.8em]
 
 			\textbf{Sampling window latency} &
-			Heuristics require $M$ events (typically 10--15 keys) before results are valid. &
+			Heuristics require $M$ events (typically 10--15 keys) before results are statistically valid. &
 			Calculating variance on smaller windows ($M < 5$) leads to high false-positive rates. &
 			Meaningful payloads require at least 15--20 keystrokes before execution, ensuring the window fills before the final $\langle\text{Enter}\rangle$. \\
-			\addlinespace[0.8em]
 
 			\textbf{Platform lock-in} &
 			Implementation relies on the Win32 API, prohibiting cross-platform execution. &

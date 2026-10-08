@@ -84,11 +84,11 @@ The decision-making within \projectNameFormatted\ follows deterministic logic de
 \subsubsection{Thinking Concurrently}
 \speclabel{AO3.1.1a}
 
-\input{assets/diagrams/2_concurrency-pipeline.tex}
-
 When an application installs a low-level keyboard hook (\texttt{WH\_KEYBOARD\_LL}), Windows invokes the callback function every time a key is pressed. The OS monitors this callback with a strict timeout defined in the Windows Registry (\texttt{LowLevelHooksTimeout}, typically between $200\,\text{ms}$ and $1,000\,\text{ms}$). If the callback function blocks or takes too long to return, Windows will consider the hook unresponsive and remove it from the global hook chain as well, which leaves the system unprotected.
 
 To solve this, \projectNameFormatted\ uses a concurrent design, illustrated in Figure~\ref{fig:concurrency_pipeline}:
+
+\input{assets/diagrams/2_concurrency-pipeline.tex}
 
 \begin{enumerate}
 	\item \textbf{Thread 1 (Hook Producer):} The high-priority hook only checks the whitelist, and pushes the raw timestamp and device data into a thread-safe circular ring buffer. It does nothing more so as not to delay the callback.

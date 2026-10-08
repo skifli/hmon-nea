@@ -86,3 +86,37 @@
 % Callouts!
 \usepackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
+
+% CLEANUP STUFF
+
+% Do a lot of things, when you write the bio; Please don't forget you better hyphenate that
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% Lists in table cells
+\newlist{tablelist}{itemize}{1}
+\setlist[tablelist]{
+	label=\textbullet,
+	leftmargin=*,
+	nosep,
+	wide=0pt,
+	topsep=0pt,
+	partopsep=0pt,
+	before=\vspace{-0.65\baselineskip} % Brings the top bullet up into line with the row text
+}
+
+% CapTIONS!
+\captionsetup{
+	font=small,
+	labelfont={bf,small},
+	labelsep=colon,
+	skip=6pt
+}
+
+% Do not stretch gaps between figures, headings, paragraphs, etc
+\raggedbottom
+
+% Standardises the spacing around figs etc
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}    % Space above and below in-text figures
+\setlength{\textfloatsep}{12pt plus 2pt minus 2pt} % Space between floats and text
+\setlength{\abovecaptionskip}{6pt}                 % Space between image and caption
+\setlength{\belowcaptionskip}{4pt}                 % Space below caption

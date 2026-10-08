@@ -8,60 +8,49 @@ To ensure \projectNameFormatted\ remains practical in varied real-world circumst
 \subsubsection{Stakeholder Identification \& Profiles}
 
 {\small
-	% xltabular is way better than the old table stuff I was using :)
-	\begin{xltabular}{\textwidth}{@{} p{2.4cm} L L @{}}
+	\renewcommand{\arraystretch}{1.25}
+	\begin{xltabular}{\textwidth}{@{} P{2.5cm} L L @{}}
 		\caption{Stakeholders, Contexts, and Needs} \label{tab:stakeholder_matrix} \\
 		\toprule
 		\textbf{Stakeholder} & \textbf{Contexts} & \textbf{Needs} \\
 		\midrule
 		\endfirsthead
 
-		% Header for subsequent pages
 		\toprule
 		\textbf{Stakeholder} & \textbf{Contexts} & \textbf{Needs} \\
 		\midrule
 		\endhead
 
-		% Footer on pages before a split
-		\midrule
-		\multicolumn{3}{r@{}}{\scriptsize\textit{Continued on next page\dots}} \\
-		\endfoot
-
-		% Footer on the very last page
-		\bottomrule
-		\endlastfoot
+		\tablecontinuation{3}
 
 		\textbf{\stakeholdersPU}\par
 		\textit{\footnotesize (Primary User)} &
-		Has a high-end Windows desktop used for various activities such as gaming, and programming. The desktop is in a secure home environment. Hardware peripherals (e.g., a custom mechanical keyboard, and multi-button mouse) are relatively permanent. &
-		\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt, topsep=0pt, partopsep=0pt, before=\leavevmode\vspace{-1.2\baselineskip}]
+		Has a high-end Windows desktop used for various activities such as gaming and programming. The desktop is in a secure home environment. Hardware peripherals (e.g., a custom mechanical keyboard and multi-button mouse) are relatively permanent. &
+		\begin{tablelist}
 			\item \textbf{Sub-millisecond latency:} Gaming requires zero perceptible input lag ($<1\,\text{ms}$).
-			\item \textbf{Macro accommodation:} Rapid hotkey scripts must not be flagged as a false-positive.
+			\item \textbf{Macro accommodation:} Rapid hotkey scripts must not be flagged as false positives.
 			\item \textbf{Background execution:} Unobtrusive system tray icon; no focus-stealing popups during full-screen applications.
-		\end{itemize} \\
-		\addlinespace[0.6em]
+		\end{tablelist} \\
 
 		\textbf{\stakeholdersSU}\par
 		\textit{\footnotesize (Secondary User)} &
 		Portable laptop user frequently working in untrusted, public environments (e.g., libraries). High risk of opportunistic attacks where an unattended device is plugged in while the user is away. &
-		\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt, topsep=0pt, partopsep=0pt, before=\leavevmode\vspace{-1.2\baselineskip}]
+		\begin{tablelist}
 			\item \textbf{Zero-trust policy:} New unrecognised devices must default to a restricted state.
-			\item \textbf{High-visibility alerts:} Clear prompt requiring explicit user intervention should be used.
-			\item \textbf{Zero database bloat:} Automatic cleanup of old data on application close / device disconnection.
-		\end{itemize} \\
-		\addlinespace[0.6em]
+			\item \textbf{High-visibility alerts:} A clear prompt requiring explicit user intervention must be used.
+			\item \textbf{Zero database bloat:} Automatic cleanup of ephemeral records on device disconnection.
+		\end{tablelist} \\
 
 		\textbf{\stakeholdersTU}\par
 		\textit{\footnotesize (Tertiary User)} &
 		Windows laptop user who regularly uses ephemeral peripherals in various environments (e.g., presentation clickers for F1 in Schools, temporary flash drives). &
-		\begin{itemize}[leftmargin=*, nosep, wide=0pt, left=0pt, topsep=0pt, partopsep=0pt, before=\leavevmode\vspace{-1.2\baselineskip}]
-			\item \textbf{Volatile trust:} Ability to temporarily permit a device (e.g., ``Allow Once''), without permanently adding it to the database.
+		\begin{tablelist}
+			\item \textbf{Volatile trust:} Ability to temporarily permit a device (e.g., ``Allow Once'') without permanently adding it to the database.
 			\item \textbf{Low friction:} Must be able to distinguish legitimate repeated inputs (e.g., PageUp / PageDown from a presentation clicker) from actual malicious activity.
 			\item \textbf{No CLI dependency:} Protection must be functional without having to open the command prompt.
-		\end{itemize} \\
+		\end{tablelist} \\
 	\end{xltabular}
 }
-
 \begin{note}
 	While portable laptop users would face a higher exposure to opportunistic attacks, \stakeholdersPU\ was selected as the primary user because his usage profile has the strictest operational constraints (sub-millisecond latency and macro accommodation). Ensuring \projectNameFormatted\ is not intrusive on his system will guarantee that it will run seamlessly on lower-demand systems as well.
 \end{note}
@@ -102,46 +91,33 @@ The interview focused on three main objectives:
 \stakeholdersPU's feedback was used to inform three architectural choices:
 
 {\small
-\begin{xltabular}{\textwidth}{@{} p{3.4cm} L L @{}}
+\renewcommand{\arraystretch}{1.25}
+\begin{xltabular}{\textwidth}{@{} P{3.3cm} L L @{}}
 	\caption{Translation of PU needs into constraints} \label{tab:user_requirements_mapping} \\
 	\toprule
 	\textbf{PU Feedback} & \textbf{Technical Implication} & \textbf{Architectural Effect} \\
 	\midrule
 	\endfirsthead
 
-	% Header on subsequent pages
 	\toprule
 	\textbf{PU Feedback} & \textbf{Technical Implication} & \textbf{Architectural Effect} \\
 	\midrule
 	\endhead
 
-	% Footer on pages before a split
-	\midrule
-	\multicolumn{3}{r@{}}{\scriptsize\textit{Continued on next page\dots}} \\
-	\endfoot
+	\tablecontinuation{3}
 
-	% Footer on the very last page
-	\bottomrule
-	\endlastfoot
-
-	% Row 1
 	Input lag leads to immediate software removal. &
 	The hook callback thread cannot perform heavy calculations or disk I/O that risks hanging it. &
-	Use the $O(1)$ fast-return design path in Thread 1; offload the heavier calculations to Thread 2 via a ring buffer. \\
-	\addlinespace[0.8em]
+	Use the $O(1)$ fast-return design path in Thread 1; offload heavier calculations to Thread 2 via a ring buffer. \\
 
-	% Row 2
 	Hardware macros can mimic BadUSB attacks. &
 	Running heuristics on all devices will cause high false-positive rates for power users. &
 	Use an in-memory whitelist. Whitelisted devices bypass heuristic analysis entirely. \\
-	\addlinespace[0.8em]
 
-	% Row 3
 	Popups must not steal window focus or minimise games. &
 	We cannot make any changes to the GUI / new GUI surfaces that risk stealing focus from the user even for a fraction of a second. &
 	Use in-built Windows APIs such as the one for notifications. This means if the user is in a full-screen application Do-Not-Disturb is usually on, and so the notification will not immediately show---but can be read later. \\
 \end{xltabular}
-\par
 }
 
 \subsubsection{Secondary Consultations Analysis}

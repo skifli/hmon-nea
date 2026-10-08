@@ -10,7 +10,8 @@ Rather than just listing the requirements, below they are split into the \textbf
 Table~\ref{tab:hardware_requirements} lists the hardware configurations required for deployment and testing.
 
 	{\small
-		\begin{xltabular}{\textwidth}{@{} p{2.8cm} p{2.4cm} L L @{}}
+		\renewcommand{\arraystretch}{1.2}
+		\begin{xltabular}{\textwidth}{@{} P{2.5cm} P{2.5cm} L L @{}}
 			\caption{Hardware Requirements and Justifications} \label{tab:hardware_requirements} \\
 			\toprule
 			\textbf{Component} & \textbf{Minimum Specification} & \textbf{Role} & \textbf{Justification} \\
@@ -22,47 +23,19 @@ Table~\ref{tab:hardware_requirements} lists the hardware configurations required
 			\midrule
 			\endhead
 
-			\midrule
-			\multicolumn{4}{r@{}}{\scriptsize\textit{Continued on next page\dots}} \\
-			\endfoot
+			\tablecontinuation{4}
 
-			\bottomrule
-			\endlastfoot
+			\textbf{CPU} & x86-64 architecture; $\ge 2.0\,\text{GHz}$ base clock. & Runs the OS hook, heuristic engine, and UI threads. & Continuous rolling calculations require adequate hardware to prevent stalls during rapid bursts. \\
 
-			\textbf{CPU} &
-			x86-64 architecture; $\ge 2.0\,\text{GHz}$ base clock. &
-			Runs the OS hook, heuristic engine, and UI threads. &
-			Continuous rolling calculations require adequate hardware to prevent stalls during rapid bursts. \\
-			\addlinespace[0.8em]
+			\textbf{RAM} & $\ge 50\,\text{MB}$ free memory (system total $\ge 4\,\text{GB}$). & Stores the in-memory whitelists, rolling buffers, and thread states. & The buffers must be in physical RAM rather than the pagefile on disk, so the execution is sub-millisecond without causing I/O delays. \\
 
-			\textbf{RAM} &
-			$\ge 50\,\text{MB}$ free memory (system total $\ge 4\,\text{GB}$). &
-			Stores the in-memory whitelists, rolling buffers, and thread states. &
-			The buffers must be in physical RAM rather than the pagefile on disk, so the execution is sub-millisecond without causing I/O delays. \\
-			\addlinespace[0.8em]
+			\textbf{Secondary Storage} & $\ge 100\,\text{MB}$ available disk space. & Stores the compiled binary, configuration files, and event logs. & While the binary requires minimal storage, persistent logs require sufficient headroom to prevent write failures. \\
 
-			\textbf{Secondary Storage} &
-			$\ge 100\,\text{MB}$ available disk space. &
-			Stores the compiled binary, configuration files, and event logs. &
-			While the compiled executable requires minimal storage, persistent logs require sufficient headroom to prevent write failures. \\
-			\addlinespace[0.8em]
+			\textbf{USB Ports} & At least two independent physical ports. & Allows simultaneous connection of a legitimate keyboard and test peripheral. & Essential for making sure the OS assigns discrete hardware handles and the program identifies devices correctly. \\
 
-			\textbf{USB Ports} &
-			At least two independent physical ports. &
-			Allows the simultaneous connection of a legitimate keyboard and an untrusted test peripheral. &
-			Essential for making sure the OS assigns discrete hardware handles and the program identifies devices correctly. \\
-			\addlinespace[0.8em]
+			\textbf{Legitimate Peripheral} & Standard keyboard. & Gathers standard human typing data during development. & Required to collect $\text{IKI}$ benchmarks and make sure that legitimate inputs are not flagged. \\
 
-			\textbf{Legitimate Peripheral} &
-			Standard keyboard. &
-			Used to gather standard human typing data during development and testing. &
-			Required to collect inter-keystroke interval ($\text{IKI}$) benchmarks and make sure that legitimate inputs are not flagged. \\
-			\addlinespace[0.8em]
-
-			\textbf{BadUSB Test Device} &
-			Programmable microcontroller (e.g., RP2040). &
-			Simulates an attack in a controlled test environment. &
-			Enables programmatic injection of known inputs at exact timings without deploying hazardous real-world malware. \\
+			\textbf{BadUSB Test Device} & Programmable microcontroller (e.g., RP2040). & Simulates an attack in a controlled test environment. & Enables programmatic injection of known inputs at exact timings without using hazardous real-world malware. \\
 		\end{xltabular}
 	}
 
@@ -75,7 +48,8 @@ Table~\ref{tab:hardware_requirements} lists the hardware configurations required
 The software dependencies and toolchain have been chosen to ensure reliable execution speed and minimise the attack surface of the software itself.
 
 	{\small
-		\begin{xltabular}{\textwidth}{@{} p{2.8cm} p{2.4cm} L L @{}}
+		\renewcommand{\arraystretch}{1.2}
+		\begin{xltabular}{\textwidth}{@{} P{2.5cm} P{2.5cm} L L @{}}
 			\caption{Software Requirements and Justifications} \label{tab:software_requirements} \\
 			\toprule
 			\textbf{Component} & \textbf{Specification} & \textbf{Role} & \textbf{Justification} \\
@@ -87,46 +61,18 @@ The software dependencies and toolchain have been chosen to ensure reliable exec
 			\midrule
 			\endhead
 
-			\midrule
-			\multicolumn{4}{r@{}}{\scriptsize\textit{Continued on next page\dots}} \\
-			\endfoot
+			\tablecontinuation{4}
 
-			\bottomrule
-			\endlastfoot
+			\textbf{Operating System} & Microsoft Windows 10 / 11 (64-bit). & Target runtime environment. & \projectNameFormatted\ uses the Win32 APIs which are standardised and stable across modern 64-bit Windows releases. \\
 
-			\textbf{Operating System} &
-			Microsoft Windows 10 / 11 (64-bit). &
-			Target runtime environment. &
-			\projectNameFormatted\ uses the Win32 APIs which are standardised and stable across all modern 64-bit Windows releases. \\
-			\addlinespace[0.8em]
+			\textbf{Programming Language} & ISO C. & Implements the daemon and heuristic engine. & Provides direct memory control with no garbage collection overhead, ensuring hooks execute well within their timeout limits. \\
 
-			\textbf{Programming Language} &
-			ISO C. &
-			The language used for implementing the daemon and heuristic engine. &
-			Provides direct memory control with no garbage collection overhead, ensuring hooks execute well within their timeout limits. \\
-			\addlinespace[0.8em]
+			\textbf{Compiler} & Clang / LLVM. & Builds native binaries. & Produces standalone \texttt{.exe} binaries without requiring the .NET runtime or redistributables. \\
 
-			\textbf{Compiler} &
-			Clang / LLVM. &
-			Builds native binaries. &
-			Produces standalone \texttt{.exe} binaries without requiring the .NET runtime or redistributables. \\
-			\addlinespace[0.8em]
+			\textbf{Win32 Core APIs} & \texttt{user32.dll} and \texttt{kernel32.dll}. & Provide hook installation, thread synchronisation, and Raw Input capabilities. & Standard system libraries linked at compile time, so there are zero external dependencies. \\
 
-			\textbf{Win32 Core APIs} &
-			\texttt{user32.dll} and \texttt{kernel32.dll}. &
-			Provide hook installation, thread synchronisation, and Raw Input capabilities. &
-			Standard system libraries linked at compile time, guaranteeing no external dependencies. \\
-			\addlinespace[0.8em]
+			\textbf{Data Serialiser} & Lightweight JSON parser (e.g., \texttt{cJSON}). & Serialises and deserialises configuration files. & Allows human-readable persistent storage without introducing the bloat and attack surface of a fully fledged SQL database. \\
 
-			\textbf{Data Serialiser} &
-			Lightweight JSON parser (e.g., \texttt{cJSON}). &
-			Serialises and deserialises the JSON files. &
-			Allows human-readable persistent storage without introducing the bloat and attack surface of a fully fledged SQL database. \\
-			\addlinespace[0.8em]
-
-			\textbf{Benchmarking \& Analysis Tools} &
-			Win32 High-Resolution Timers, Task Manager, and GitHub Actions. &
-			Measure the memory footprint, CPU utilisation, and hook latency. &
-			Required to quantitatively evaluate success criteria during testing. \\
+			\textbf{Benchmarking Tools} & Win32 High-Resolution Timers, Task Manager, GitHub Actions. & Measure memory footprint, CPU utilisation, and hook latency. & Required to quantitatively verify the success criteria during development and evaluation. \\
 		\end{xltabular}
 	}

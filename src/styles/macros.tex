@@ -68,3 +68,14 @@
 	Ba ha!
 \end{callout}
 \end{comment}
+
+% CLEANUP STUFF
+
+% Table cont footer
+\newcommand{\tablecontinuation}[1]{%
+    \midrule
+    \multicolumn{#1}{r@{}}{\scriptsize\sffamily\textit{Continued on next page\dots}} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+}
